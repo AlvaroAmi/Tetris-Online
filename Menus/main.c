@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
                 log_in();
                 break;
             case '2':
-                printf("Registrar nuevo usuario...\n");
+                register_user();
                 break;
             case '3':
                 play_offline();
