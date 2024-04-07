@@ -79,7 +79,6 @@ static char *parse_identifier(struct parser *parser)
     if (!is_identifier_start(parser->src[parser->cursor - 1]))
     {
         parser_error(parser, "Invalid identifier");
-        exit(1);
     }
 
     while (!is_eof(parser) && is_identifier(parser->src[parser->cursor]))
