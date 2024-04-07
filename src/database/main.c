@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "sqlite3.h"
-#include "../../include/database.h"
+#include "database.h"
 
 int main() {
     sqlite3 *db;
