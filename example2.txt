@@ -1,0 +1,5 @@
+port = 10
+ip = "127.0.0.1"
+str = "hello world\n"
+asdf = true
+_whatever = 23.432000
