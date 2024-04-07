@@ -63,7 +63,7 @@ char main_menu() {
   print_tetris_logo();
   printf("1. Iniciar sesion\n");
   printf("2. Registrarse\n");
-  printf("3. Jugar offline\n");
+  printf("3. Jugar\n");
   printf("\n");
   printf("*Pulsa 'q' para salir\n");
   printf("\n");
@@ -116,7 +116,7 @@ char offline_menu() {
   return *linea;
 }
 
-void log_in() {
+int log_in() {
   char option;
   do {
     char *control_option = &option;
@@ -129,32 +129,34 @@ void log_in() {
         for (int i = 0; i < 2; i++)
           free(result[i]);
         free(result);
-        break;
+        return 1; 
       } else {
-        printf("\t\t Inicio Incorrecto\n");
+        printf("\t\tInicio Incorrecto\n");
         printf("Correo o contrasena incorrectos\n");
 
         for (int i = 0; i < 2; i++)
           free(result[i]);
         free(result);
-        break;
+        break; 
       }
     case 'q':
-
       for (int i = 0; i < 2; i++)
         free(result[i]);
       free(result);
-      return;
+      return 0; 
     default:
       printf("Opcion no valida\n");
 
       for (int i = 0; i < 2; i++)
         free(result[i]);
       free(result);
-      break;
+      break; 
     }
   } while (option != 'q');
+
+  return 0; 
 }
+
 
 void play_offline() {
   char option;
@@ -197,16 +199,6 @@ int has_special_char(const char *str) {
     str++;
   }
   return 0;
-}
-
-int has_at_least_eight_digits(const char *str) {
-  int count = 0;
-  while (*str) {
-    if (isdigit((unsigned char)*str))
-      count++;
-    str++;
-  }
-  return count >= 8;
 }
 
 int contains_at_symbol(const char *email) {
@@ -255,7 +247,7 @@ void register_user() {
       system("pause");
       continue;
     }
-    if (!has_uppercase(password) || !has_special_char(password) || !has_at_least_eight_digits(password)) {
+    if (!has_uppercase(password) || !has_special_char(password) || !strlen(password) >= 8 ) {
       printf("La contrasena debe contener al menos una mayuscula, un caracter especial, y 8 digitos.\n");
       system("pause");
       continue;
@@ -266,6 +258,13 @@ void register_user() {
 
   printf("Registro correcto\n");
   printf("Inicia sesion para continuar (presiona enter)\n");
-  while (getchar() != '\n')
-    ;
+  while (getchar() != '\n');  
+}
+
+void print_logged_in_menu() {
+    system("cls");
+    print_tetris_logo(); 
+    printf("1. Jugar\n");
+    printf("2. Cerrar Sesion\n");
+    printf("*Pulsa 'q' para salir\n");
 }

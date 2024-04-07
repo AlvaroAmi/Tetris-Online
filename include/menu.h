@@ -11,12 +11,14 @@ char **log_in_menu(char *option);
 
 char offline_menu();
 
-void log_in();
+int log_in();
 
 void play_offline();
 
 int is_valid(char *mail, char *password);
 
 void register_user();
+
+void print_logged_in_menu();
 
 #endif
