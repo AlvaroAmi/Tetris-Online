@@ -11,7 +11,7 @@ int main() {
     }
 
     // Insertar usuario
-    result = insertUser(db, "new_username", "new_user@example.com", "new_password", 0);
+    result = insert_user(db, "new_username", "new_user@example.com", "new_password", 0);
     if (result != SQLITE_OK) {
         printf("Error al insertar nuevo usuario\n");
         sqlite3_close(db);
@@ -19,7 +19,7 @@ int main() {
     }
 
     // Eliminar usuario
-    result = deleteUser(db, "old_username");
+    result = delete_user(db, "old_username");
     if (result != SQLITE_OK) {
         printf("Error al borrar usuario\n");
         sqlite3_close(db);

@@ -3,9 +3,9 @@
 #include "sqlite3.h"
 #include "database.h"
 
-int insertUser(sqlite3 *db, const char *username, const char *email, const char *password, int highestScore) {
+int insert_user(sqlite3 *db, const char *username, const char *email, const char *password, int highest_score) {
     sqlite3_stmt *stmt;
-    const char *sql = "INSERT INTO USER (username, email, password, highestScore) VALUES (?, ?, ?, ?);";
+    const char *sql = "INSERT INTO USER (username, email, password, highest_score) VALUES (?, ?, ?, ?);";
     
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (result != SQLITE_OK) {
@@ -17,7 +17,7 @@ int insertUser(sqlite3 *db, const char *username, const char *email, const char 
     sqlite3_bind_text(stmt, 1, username, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, email, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, password, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int(stmt, 4, highestScore);
+    sqlite3_bind_int(stmt, 4, highest_score);
 
     result = sqlite3_step(stmt);
     if (result != SQLITE_DONE) {
@@ -39,7 +39,7 @@ int insertUser(sqlite3 *db, const char *username, const char *email, const char 
     return SQLITE_OK;
 }
 
-int deleteUser(sqlite3 *db, const char *username) {
+int delete_user(sqlite3 *db, const char *username) {
    sqlite3_stmt *stmt;
     const char *sql = "DELETE FROM USER WHERE username = ?;";
 
