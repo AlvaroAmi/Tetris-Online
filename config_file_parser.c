@@ -130,7 +130,11 @@ static void parse_number(struct parser *parser, struct config_parameter *config_
     if (*endptr == '\0')
     {
         config_parameter->type = REAL;
+        return;
     }
+
+    // If it's not a number, it's an error
+    parser_error(parser, "Invalid number");
 }
 
 static struct config_parameter *next_config_parameter(struct parser *parser)
