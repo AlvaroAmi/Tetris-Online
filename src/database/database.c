@@ -1,12 +1,12 @@
+#include "database.h"
+#include "sqlite3.h"
 #include <stdio.h>
 #include <string.h>
-#include "sqlite3.h"
-#include "database.h"
 
 int insert_user(sqlite3 *db, const char *username, const char *email, const char *password, int highest_score) {
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO USER (username, email, password, highest_score) VALUES (?, ?, ?, ?);";
-    
+
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (result != SQLITE_OK) {
         printf("Error al preparar statement (INSERT)\n");
@@ -23,7 +23,7 @@ int insert_user(sqlite3 *db, const char *username, const char *email, const char
     if (result != SQLITE_DONE) {
         printf("Error al insertar nuevo usuario\n");
         printf("%s\n", sqlite3_errmsg(db));
-        sqlite3_finalize(stmt); 
+        sqlite3_finalize(stmt);
         return result;
     }
 
@@ -39,9 +39,9 @@ int insert_user(sqlite3 *db, const char *username, const char *email, const char
     return SQLITE_OK;
 }
 
-int show_user(sqlite3 db, const char username, const charpassword) {
-    sqlite3_stmtstmt;
-    const char sql = "SELECT password, highestScore FROM USER WHERE username = ?;";
+int show_user(sqlite3 *db, const char *username, const char *password) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT password, highestScore FROM USER WHERE username = ?;";
 
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (result != SQLITE_OK) {
@@ -54,10 +54,10 @@ int show_user(sqlite3 db, const char username, const charpassword) {
 
     result = sqlite3_step(stmt);
     if (result == SQLITE_ROW) {
-        const char retrieved_password = (const char)sqlite3_column_text(stmt, 0);
+        const char *retrieved_password = (const char *)sqlite3_column_text(stmt, 0);
 
         // Aquí se puede implementar la lógica de comparación de contraseñas
-        if (strcmp(retrieved_password , password) == 0) {
+        if (strcmp(retrieved_password, password) == 0) {
             // Password matches
             int highest_score = sqlite3_column_int(stmt, 1);
             printf("¡Inicio de sesion exitoso! Highest score: %d\n", highest_score);
@@ -74,9 +74,8 @@ int show_user(sqlite3 db, const char username, const charpassword) {
     return result == SQLITE_ROW ? SQLITE_OK : result;
 }
 
-
 int delete_user(sqlite3 *db, const char *username) {
-   sqlite3_stmt *stmt;
+    sqlite3_stmt *stmt;
     const char *sql = "DELETE FROM USER WHERE username = ?;";
 
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -92,7 +91,7 @@ int delete_user(sqlite3 *db, const char *username) {
     if (result != SQLITE_DONE) {
         printf("Error al borrar user\n");
         printf("%s\n", sqlite3_errmsg(db));
-        sqlite3_finalize(stmt); 
+        sqlite3_finalize(stmt);
         return result;
     }
 
