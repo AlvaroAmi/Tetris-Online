@@ -1,3 +1,6 @@
+#ifndef CONFIG_FILE_PARSER_H
+#define CONFIG_FILE_PARSER_H
+
 #include <stdlib.h>
 
 enum config_parameter_type
@@ -27,3 +30,5 @@ struct config_parameter
 struct config_parameter *read_config_file(const char *filename);
 void free_config_parameters(struct config_parameter *head);
 void save_config_parameters(struct config_parameter *head, const char *filename);
+
+#endif
