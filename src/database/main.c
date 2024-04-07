@@ -1,66 +1,41 @@
 #include <stdio.h>
-#include <sqlite3.h>
-
-void createTable(int rc, sqlite3 *db, char *query, char *tableName, char *err_msg);
+#include "sqlite3.h"
+#include "../../include/database.h"
 
 int main() {
     sqlite3 *db;
-    char *err_msg = 0;
-    char *testUsers[5];
-
-
-    // Crate or Open DataBase
-    int rc = sqlite3_open("TetrisOnline.db", &db);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "No se puede abrir la base de datos: %s\n", sqlite3_errmsg(db));
-        return 1;
-    } else {
-        fprintf(stdout, "Base de datos abierta exitosamente\n");
+    int result = sqlite3_open("TetrisOnline.db", &db); // Reemplaza "your_database.db" con el nombre real de tu archivo de base de datos
+    if (result != SQLITE_OK) {
+        printf("Error opening database\n");
+        return result;
     }
 
-    // Creation of tables(Queue, User, Complete Game, Duel)
-    char *createQueue = "CREATE TABLE Queue (id INTEGER PRIMARY KEY, inicio DATETIME, mode TEXT, FOREIGN KEY (id) REFERENCES User(id));";
-    char *createUser = "CREATE TABLE User (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, email TEXT, password TEXT, highestScore INT DEFAULT 0);";
-    char *createCompleteGame = "CREATE TABLE Complete_Game (id INTEGER PRIMARY KEY AUTOINCREMENT, score INTEGER, idUser INTEGER, mode TEXT, timestamp DATETIME, FOREIGN KEY (idUser) REFERENCES User(id));";
-    char *createDuel = "CREATE TABLE Duel (id INTEGER PRIMARY KEY AUTOINCREMENT, idUser1 INTEGER, idUser2 INTEGER, firstWins BOOLEAN, ended BOOLEAN, timestamp DATETIME, mode TEXT, FOREIGN KEY (idUser1) REFERENCES User(id), FOREIGN KEY (idUser2) REFERENCES User(id));";
-
-    createTable(rc, db, createQueue, "Queue", err_msg);
-    createTable(rc, db, createUser, "User", err_msg);
-    createTable(rc, db, createCompleteGame, "Complete_Game", err_msg);
-    createTable(rc, db, createDuel, "Duel", err_msg);
-
-    // User addition for test
-    char *createUser1 = "INSERT INTO User (username, email, password) values ('@alvaro', 'alvaro@gmail.com', '12345');";
-    char *createUser2 = "INSERT INTO User (username, email, password) values ('@irune', 'irune@gmail.com', '23456');";
-    char *createUser3 = "INSERT INTO User (username, email, password) values ('@jaime', 'jaime@gmail.com', '34567');";
-    char *createUser4 = "INSERT INTO User (username, email, password) values ('@erik', 'erik@gmail.com', '45678');";
-    char *createUser5 = "INSERT INTO User (username, email, password) values ('@aimar', 'aimar@gmail.com', '56789');";
-
-    rc = sqlite3_exec(db, createUser1, 0, 0, &err_msg);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error ejecutando la consulta SQL: %s\n", err_msg);
-        sqlite3_free(err_msg);
-    } else {
-        fprintf(stdout, "Tabla creada correctamente \n");
+    // Insertar usuario
+    result = insertUser(db, "new_username", "new_user@example.com", "new_password", 0);
+    if (result != SQLITE_OK) {
+        printf("Error inserting new user\n");
+        sqlite3_close(db);
+        return result;
     }
-    rc = sqlite3_exec(db, createUser2, 0, 0, &err_msg);
-    rc = sqlite3_exec(db, createUser3, 0, 0, &err_msg);
-    rc = sqlite3_exec(db, createUser4, 0, 0, &err_msg);
-    rc = sqlite3_exec(db, createUser5, 0, 0, &err_msg);
 
-    // Cerrar la base de datos
-    sqlite3_close(db);
+    // Eliminar usuario
+    result = deleteUser(db, "old_username");
+    if (result != SQLITE_OK) {
+        printf("Error deleting user\n");
+        sqlite3_close(db);
+        return result;
+    }
+
+    // Aquí podrías añadir más operaciones si es necesario.
+
+    result = sqlite3_close(db);
+    if (result != SQLITE_OK) {
+        printf("Error closing database\n");
+        printf("%s\n", sqlite3_errmsg(db));
+        return result;
+    }
+
+    printf("Database closed\n");
 
     return 0;
-} 
-void createTable(int rc, sqlite3 *db, char *query, char *tableName, char *err_msg) {
-    rc = sqlite3_exec(db, query, 0, 0, &err_msg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error ejecutando la consulta SQL: %s\n", err_msg);
-        sqlite3_free(err_msg);
-    } else {
-        fprintf(stdout, "Tabla %s creada correctamente \n", tableName);
-    }
 }

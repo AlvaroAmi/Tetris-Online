@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sqlite3.h"
+#include "../../include/database.h"
 
 int insertUser(sqlite3 *db, const char *username, const char *email, const char *password, int highestScore) {
     sqlite3_stmt *stmt;
@@ -13,6 +14,7 @@ int insertUser(sqlite3 *db, const char *username, const char *email, const char 
         return result;
     }
 
+    // Binding the parameters for the insert statement
     sqlite3_bind_text(stmt, 1, username, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, email, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, password, -1, SQLITE_TRANSIENT);
@@ -22,6 +24,7 @@ int insertUser(sqlite3 *db, const char *username, const char *email, const char 
     if (result != SQLITE_DONE) {
         printf("Error inserting new data into USER table\n");
         printf("%s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt); // Make sure to finalize the statement to avoid resource leaks
         return result;
     }
 
@@ -38,7 +41,7 @@ int insertUser(sqlite3 *db, const char *username, const char *email, const char 
 }
 
 int deleteUser(sqlite3 *db, const char *username) {
-    sqlite3_stmt *stmt;
+   sqlite3_stmt *stmt;
     const char *sql = "DELETE FROM USER WHERE username = ?;";
 
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -48,12 +51,14 @@ int deleteUser(sqlite3 *db, const char *username) {
         return result;
     }
 
+    // Binding the parameter for the delete statement
     sqlite3_bind_text(stmt, 1, username, -1, SQLITE_TRANSIENT);
 
     result = sqlite3_step(stmt);
     if (result != SQLITE_DONE) {
         printf("Error deleting user\n");
         printf("%s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt); 
         return result;
     }
 
