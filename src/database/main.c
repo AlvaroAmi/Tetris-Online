@@ -18,6 +18,12 @@ int main() {
         return result;
     }
 
+    // Ejemplo de inicio de sesión de un usuario
+    result = show_user(db, "username", "password123");
+    if (result != SQLITE_OK) {
+        printf("Error showing user\n");
+    }
+
     // Eliminar usuario
     result = delete_user(db, "old_username");
     if (result != SQLITE_OK) {
