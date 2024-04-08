@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "sqlite3.h"
+#include "database.h"
 
 #define MAX_LINE 10
 #define MAX_LEN 50
@@ -63,7 +65,6 @@ char main_menu() {
   print_tetris_logo();
   printf("1. Iniciar sesion\n");
   printf("2. Registrarse\n");
-  printf("3. Jugar\n");
   printf("\n");
   printf("*Pulsa 'q' para salir\n");
   printf("\n");
@@ -88,18 +89,16 @@ char **log_in_menu(char *option) {
   result[0][strcspn(result[0], "\n")] = 0;
 
   printf("Contrasena: ");
-  scanf("%49s", result[1]);
+  fgets(result[1], MAX_LEN, stdin);
+  result[1][strcspn(result[1], "\n")] = 0;
 
-  while (getchar() != '\n')
-    ;
-
-  printf("Presione Enter para continuar o 'q' para salir: ");
-  scanf("%c", option);
-  while (getchar() != '\n')
-    ;
+  printf("Presione Enter para continuar o 'q' para salir: \n");
+  fgets(result[1], MAX_LEN, stdin); 
+  *option = result[1][0]; 
 
   return result;
 }
+
 
 char offline_menu() {
   system("cls");
@@ -117,45 +116,47 @@ char offline_menu() {
 }
 
 int log_in() {
-  char option;
-  do {
-    char *control_option = &option;
-    char **result = log_in_menu(control_option);
-    switch (option) {
-    case '\n':
-      if (is_valid(result[0], result[1])) {
-        printf("Inicio de sesion exitoso\n");
-
-        for (int i = 0; i < 2; i++)
-          free(result[i]);
-        free(result);
-        return 1; 
-      } else {
-        printf("\t\tInicio Incorrecto\n");
-        printf("Correo o contrasena incorrectos\n");
-
-        for (int i = 0; i < 2; i++)
-          free(result[i]);
-        free(result);
-        break; 
-      }
-    case 'q':
-      for (int i = 0; i < 2; i++)
-        free(result[i]);
-      free(result);
-      return 0; 
-    default:
-      printf("Opcion no valida\n");
-
-      for (int i = 0; i < 2; i++)
-        free(result[i]);
-      free(result);
-      break; 
+    system("cls");
+    sqlite3 *db;
+    char *err_msg = 0;
+    int rc = sqlite3_open("TetrisOnline.db", &db);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "No se puede abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        return 0;
     }
-  } while (option != 'q');
 
-  return 0; 
+    char option;
+    do {
+        char *control_option = &option;
+        char **result = log_in_menu(control_option); 
+        if (option == '\n') {
+            rc = show_user(db, result[0], result[1]);
+            if (rc == SQLITE_OK) {
+                printf("Inicio de sesion exitoso\n");
+                system("pause");
+                sqlite3_close(db);
+                for (int i = 0; i < 2; i++) free(result[i]);
+                free(result);
+                return 1;
+            } else {
+                printf("Correo o contrasena incorrectos\n");
+                system("pause");
+            }
+        } else if (option == 'q') {
+            break;
+        } else {
+            printf("Opcion no valida\n");
+            system("pause");
+        }
+
+        for (int i = 0; i < 2; i++) free(result[i]);
+        free(result);
+    } while (option != 'q');
+
+    sqlite3_close(db);
+    return 0;
 }
+
 
 
 void play_offline() {
@@ -205,61 +206,79 @@ int contains_at_symbol(const char *email) {
   return strchr(email, '@') != NULL;
 }
 
+
 void register_user() {
-  char email[MAX_LEN];
-  char username[MAX_LEN];
-  char password[MAX_LEN];
-  char confirm_password[MAX_LEN];
-  int is_input_valid = 0;
-
-  while (!is_input_valid) {
-    system("cls");
-    print_register();
-    printf("Correo (o escribe 'q' para salir): ");
-
-    fgets(email, MAX_LEN, stdin);
-    email[strcspn(email, "\n")] = 0;
-
-    if (strcmp(email, "q") == 0) {
-      return;
+    
+    sqlite3 *db;
+    char *err_msg = 0;
+    int rc = sqlite3_open("TetrisOnline.db", &db); 
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "No se puede abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
     }
 
-    if (!contains_at_symbol(email)) {
-      printf("Correo invalido. Debe contener un '@'.\n");
-      system("pause");
-      continue;
+    char email[MAX_LEN];
+    char username[MAX_LEN];
+    char password[MAX_LEN];
+    char confirm_password[MAX_LEN];
+
+    while (1) {
+      system("cls");
+        print_register(); 
+        printf("Correo (o escribe 'q' para salir): ");
+        fgets(email, MAX_LEN, stdin);
+        email[strcspn(email, "\n")] = 0; 
+
+        if (strcmp(email, "q") == 0) {
+            break; 
+        }
+
+        if (!contains_at_symbol(email)) { 
+            printf("Correo invalido. Debe contener un '@'.\n");
+            system("pause");
+            continue;
+        }
+
+        printf("Nombre de usuario: ");
+        fgets(username, MAX_LEN, stdin);
+        username[strcspn(username, "\n")] = 0;
+
+        printf("Contrasena: ");
+        fgets(password, MAX_LEN, stdin);
+        password[strcspn(password, "\n")] = 0;
+
+        printf("Confirmar contrasena: ");
+        fgets(confirm_password, MAX_LEN, stdin);
+        confirm_password[strcspn(confirm_password, "\n")] = 0;
+
+        if (strcmp(password, confirm_password) != 0) {
+            printf("Las contrasenas no coinciden.\n");
+            system("pause");
+            continue;
+        }
+
+        if (!has_uppercase(password) || !has_special_char(password) || strlen(password) < 8) {
+            printf("La contrasena debe contener al menos una mayuscula, un caracter especial y tener 8 caracteres de longitud.\n");
+            system("pause");
+            continue;
+        }
+
+        
+        rc = insert_user(db, username, email, password, 0); 
+        if (rc != SQLITE_OK) {
+            printf("Error al registrar el usuario: %s\n", sqlite3_errmsg(db));
+            system("pause");
+        } else {
+            printf("Usuario registrado exitosamente.\n");
+            system("pause");
+            break; 
+        }
     }
 
-    printf("Nombre usuario: ");
-    fgets(username, MAX_LEN, stdin);
-    username[strcspn(username, "\n")] = 0;
-
-    printf("Contrasena: ");
-    fgets(password, MAX_LEN, stdin);
-    password[strcspn(password, "\n")] = 0;
-
-    printf("Confirmar contrasena: ");
-    fgets(confirm_password, MAX_LEN, stdin);
-    confirm_password[strcspn(confirm_password, "\n")] = 0;
-
-    if (strcmp(password, confirm_password) != 0) {
-      printf("Las contrasenas no coinciden.\n");
-      system("pause");
-      continue;
-    }
-    if (!has_uppercase(password) || !has_special_char(password) || !strlen(password) >= 8 ) {
-      printf("La contrasena debe contener al menos una mayuscula, un caracter especial, y 8 digitos.\n");
-      system("pause");
-      continue;
-    }
-
-    is_input_valid = 1;
-  }
-
-  printf("Registro correcto\n");
-  printf("Inicia sesion para continuar (presiona enter)\n");
-  while (getchar() != '\n');  
+    sqlite3_close(db);
 }
+
 
 void print_logged_in_menu() {
     system("cls");
