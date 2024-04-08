@@ -39,7 +39,7 @@ int insert_user(sqlite3 *db, const char *username, const char *email, const char
 
 int show_user(sqlite3 *db, const char *email, const char *password) {
     sqlite3_stmt *stmt;
-    const char *sql = "SELECT password, highestScore FROM USER WHERE email = ?;";
+    const char *sql = "SELECT * FROM USER WHERE email = ? and password = ?;";
 
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
     if (result != SQLITE_OK) {
@@ -49,12 +49,25 @@ int show_user(sqlite3 *db, const char *email, const char *password) {
     }
 
     sqlite3_bind_text(stmt, 1, email, -1, SQLITE_TRANSIENT);
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    sqlite3_bind_text(stmt, 2, password, -1, SQLITE_TRANSIENT);
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
 
     result = sqlite3_step(stmt);
     
     sqlite3_finalize(stmt);
-
-    return result == SQLITE_ROW ? SQLITE_OK : result;
+    sqlite3_close(db);
+    
+    return result == SQLITE_ROW ? 1 : 0;
 }
 
 int delete_user(sqlite3 *db, const char *username) {

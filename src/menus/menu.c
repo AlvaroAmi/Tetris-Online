@@ -93,8 +93,8 @@ char **log_in_menu(char *option) {
   result[1][strcspn(result[1], "\n")] = 0;
 
   printf("Presione Enter para continuar o 'q' para salir: \n");
-  fgets(result[1], MAX_LEN, stdin); 
-  *option = result[1][0]; 
+  fgets(option, MAX_LEN, stdin); 
+  
 
   return result;
 }
@@ -131,10 +131,10 @@ int log_in() {
         char **result = log_in_menu(control_option); 
         if (option == '\n') {
             rc = show_user(db, result[0], result[1]);
-            if (rc == SQLITE_OK) {
+            if (rc == 1) {
                 printf("Inicio de sesion exitoso\n");
                 system("pause");
-                sqlite3_close(db);
+                
                 for (int i = 0; i < 2; i++) free(result[i]);
                 free(result);
                 return 1;
@@ -143,6 +143,7 @@ int log_in() {
                 system("pause");
             }
         } else if (option == 'q') {
+          
             break;
         } else {
             printf("Opcion no valida\n");
@@ -153,7 +154,7 @@ int log_in() {
         free(result);
     } while (option != 'q');
 
-    sqlite3_close(db);
+    
     return 0;
 }
 
