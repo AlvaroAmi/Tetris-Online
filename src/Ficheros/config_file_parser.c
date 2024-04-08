@@ -186,7 +186,7 @@ static struct config_parameter *next_config_parameter(struct parser *parser)
                 parser->state = EXPECTING_VALUE;
                 break;
 
-            case EXPECTING_VALUE:
+            case EXPECTING_VALUE:;
                 struct config_parameter *parameter = malloc(sizeof(struct config_parameter));
                 parameter->key = key;
 
