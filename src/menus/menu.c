@@ -77,6 +77,7 @@ char main_menu() {
 
 char **log_in_menu(char *option) {
   system("cls");
+  system("clear");
   print_login();
 
   char **result = (char **)malloc(2 * sizeof(char *));
