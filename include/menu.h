@@ -11,6 +11,8 @@ char **log_in_menu(char *option);
 
 char offline_menu();
 
+void init_menus(int is_logged_in);
+
 int log_in();
 
 void play_offline();
