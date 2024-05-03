@@ -6,9 +6,13 @@
 #include <string.h>
 #include "sqlite3.h"
 #include "database.h"
+#include <winsock2.h>
 
 #define MAX_LINE 10
 #define MAX_LEN 50
+
+//OLD VERSION OF MENU 
+//NEW VERSION --> MENUS.C
 
 void print_tetris_logo() {
   printf("  _____ _____ _____ ____  ___ ____  \n");
@@ -200,8 +204,6 @@ int log_in() {
     
     return 0;
 }
-
-
 
 void play_offline() {
   char option;
