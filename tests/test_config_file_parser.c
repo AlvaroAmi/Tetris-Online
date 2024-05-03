@@ -32,6 +32,8 @@ void print_config_parameters(struct config_parameter *head) {
 int main(int argc, char const *argv[]) {
     struct config_parameter *config_parameter_head = read_config_file("example_config_file.txt");
     print_config_parameters(config_parameter_head);
+    printf("\nSearching for port parameter...\n");
+    print_config_parameter(get_config_parameter(config_parameter_head, "port"));
     save_config_parameters(config_parameter_head, "example_config_file_saved.txt");
     free_config_parameters(config_parameter_head);
     return 0;

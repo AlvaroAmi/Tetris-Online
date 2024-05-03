@@ -4,15 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum parser_state
-{
+enum parser_state {
     EXPECTING_IDENTIFIER,
     EXPECTING_EQUAL,
     EXPECTING_VALUE
 };
 
-struct parser
-{
+struct parser {
     char *src;
     size_t cursor;
     size_t src_length;
@@ -21,50 +19,40 @@ struct parser
     enum parser_state state;
 };
 
-static int is_eof(struct parser *parser)
-{
+static int is_eof(struct parser *parser) {
     return parser->cursor >= parser->src_length;
 }
 
-static void skip_while_not(struct parser *parser, int (*predicate)(int))
-{
-    while (!is_eof(parser) && !predicate(parser->src[parser->cursor]))
-    {
+static void skip_while_not(struct parser *parser, int (*predicate)(int)) {
+    while (!is_eof(parser) && !predicate(parser->src[parser->cursor])) {
         parser->cursor++;
     }
 }
 
-static void skip_line(struct parser *parser)
-{
-    while (!is_eof(parser) && !(parser->src[parser->cursor] == '\n'))
-    {
+static void skip_line(struct parser *parser) {
+    while (!is_eof(parser) && !(parser->src[parser->cursor] == '\n')) {
         parser->cursor++;
     }
 }
 
-static int is_identifier_start(const char c)
-{
+static int is_identifier_start(const char c) {
     return isalpha(c) || c == '_';
 }
 
-static int is_identifier(const char c)
-{
+static int is_identifier(const char c) {
     return isalnum(c) || c == '_';
 }
 
-static int is_boolean(const char *s)
-{
+static int is_boolean(const char *s) {
     return strcmp(s, "true") == 0 || strcmp(s, "false") == 0;
 }
 
-static void parser_error(struct parser *parser, const char *message)
-{
+static void parser_error(struct parser *parser, const char *message) {
     fprintf(stderr, "Error at line %ld, column %ld: %s\n", parser->line, parser->cursor - parser->beginning_of_line, message);
     exit(1);
 }
 
-static char *get_string_from_range(const char *src, size_t start, size_t end)
-{
+static char *get_string_from_range(const char *src, size_t start, size_t end) {
     size_t size = end - start;
     char *str = malloc(size + 1);
     memcpy(str, src + start, size);
@@ -72,12 +60,10 @@ static char *get_string_from_range(const char *src, size_t start, size_t end)
     return str;
 }
 
-static char *parse_identifier(struct parser *parser)
-{
+static char *parse_identifier(struct parser *parser) {
     size_t first_char_position = parser->cursor - 1;
 
-    if (!is_identifier_start(parser->src[parser->cursor - 1]))
-    {
+    if (!is_identifier_start(parser->src[parser->cursor - 1])) {
         parser_error(parser, "Invalid identifier");
     }
 
@@ -89,14 +75,11 @@ static char *parse_identifier(struct parser *parser)
     return identifier;
 }
 
-static void parse_string(struct parser *parser, struct config_parameter *config_parameter)
-{
+static void parse_string(struct parser *parser, struct config_parameter *config_parameter) {
     size_t first_char_position = parser->cursor;
     char c;
-    while ((c = parser->src[parser->cursor++]) != '"')
-    {
-        if (c == '\0' || c == '\n')
-        {
+    while ((c = parser->src[parser->cursor++]) != '"') {
+        if (c == '\0' || c == '\n') {
             parser_error(parser, "Expected '\"'");
         }
     }
@@ -107,8 +90,7 @@ static void parse_string(struct parser *parser, struct config_parameter *config_
     config_parameter->value.string = string;
 }
 
-static void parse_number(struct parser *parser, struct config_parameter *config_parameter)
-{
+static void parse_number(struct parser *parser, struct config_parameter *config_parameter) {
     size_t first_char_position = parser->cursor - 1;
     skip_while_not(parser, isspace);
     char *number_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
@@ -118,8 +100,7 @@ static void parse_number(struct parser *parser, struct config_parameter *config_
     config_parameter->value.integer = strtoll(number_str, &endptr, 10);
 
     // The value was indeed an integer
-    if (*endptr == '\0')
-    {
+    if (*endptr == '\0') {
         config_parameter->type = INTEGER;
         return;
     }
@@ -127,8 +108,7 @@ static void parse_number(struct parser *parser, struct config_parameter *config_
     // Maybe it's a real number
     config_parameter->value.real = strtod(number_str, &endptr);
 
-    if (*endptr == '\0')
-    {
+    if (*endptr == '\0') {
         config_parameter->type = REAL;
         return;
     }
@@ -137,16 +117,13 @@ static void parse_number(struct parser *parser, struct config_parameter *config_
     parser_error(parser, "Invalid number");
 }
 
-static struct config_parameter *next_config_parameter(struct parser *parser)
-{
+static struct config_parameter *next_config_parameter(struct parser *parser) {
     parser->state = EXPECTING_IDENTIFIER;
     char *key = NULL;
 
     char c;
-    while ((c = parser->src[parser->cursor++]))
-    {
-        switch (c)
-        {
+    while ((c = parser->src[parser->cursor++])) {
+        switch (c) {
         case ' ':
         case '\t':
         case '\r':
@@ -171,16 +148,14 @@ static struct config_parameter *next_config_parameter(struct parser *parser)
             break;
 
         default:
-            switch (parser->state)
-            {
+            switch (parser->state) {
             case EXPECTING_IDENTIFIER:
                 key = parse_identifier(parser);
                 parser->state = EXPECTING_EQUAL;
                 break;
 
             case EXPECTING_EQUAL:
-                if (c != '=')
-                {
+                if (c != '=') {
                     parser_error(parser, "Expected '='");
                 }
                 parser->state = EXPECTING_VALUE;
@@ -190,13 +165,10 @@ static struct config_parameter *next_config_parameter(struct parser *parser)
                 struct config_parameter *parameter = malloc(sizeof(struct config_parameter));
                 parameter->key = key;
 
-                if (c == '"')
-                {
+                if (c == '"') {
                     parse_string(parser, parameter);
                     return parameter;
-                }
-                else if (isdigit(c) || c == '+' || c == '-')
-                {
+                } else if (isdigit(c) || c == '+' || c == '-') {
                     parse_number(parser, parameter);
                     return parameter;
                 }
@@ -205,8 +177,7 @@ static struct config_parameter *next_config_parameter(struct parser *parser)
                 skip_while_not(parser, isspace);
                 char *value_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
-                if (is_boolean(value_str))
-                {
+                if (is_boolean(value_str)) {
                     parameter->type = BOOLEAN;
                     parameter->value.boolean = strcmp(value_str, "true") == 0;
                     free(value_str);
@@ -224,8 +195,7 @@ static struct config_parameter *next_config_parameter(struct parser *parser)
     }
 }
 
-struct config_parameter *read_config_file(const char *filename)
-{
+struct config_parameter *read_config_file(const char *filename) {
     FILE *fp = fopen(filename, "r");
 
     fseek(fp, 0, SEEK_END);
@@ -249,8 +219,7 @@ struct config_parameter *read_config_file(const char *filename)
     struct config_parameter *head = next_config_parameter(&parser);
     struct config_parameter *cur_node = head;
 
-    while (1)
-    {
+    while (1) {
         struct config_parameter *parameter = next_config_parameter(&parser);
         if (parameter == NULL)
             break;
@@ -264,11 +233,9 @@ struct config_parameter *read_config_file(const char *filename)
     return head;
 }
 
-void free_config_parameters(struct config_parameter *head)
-{
+void free_config_parameters(struct config_parameter *head) {
     struct config_parameter *cur_node = head;
-    while (cur_node != NULL)
-    {
+    while (cur_node != NULL) {
         struct config_parameter *next = cur_node->next;
         free(cur_node->key);
         if (cur_node->type == STRING)
@@ -279,15 +246,12 @@ void free_config_parameters(struct config_parameter *head)
     }
 }
 
-void save_config_parameters(struct config_parameter *head, const char *filename)
-{
+void save_config_parameters(struct config_parameter *head, const char *filename) {
     FILE *fp = fopen(filename, "w");
 
     struct config_parameter *cur_node = head;
-    while (cur_node != NULL)
-    {
-        switch (cur_node->type)
-        {
+    while (cur_node != NULL) {
+        switch (cur_node->type) {
         case INTEGER:
             fprintf(fp, "%s = %lld\n", cur_node->key, cur_node->value.integer);
             break;
@@ -309,4 +273,16 @@ void save_config_parameters(struct config_parameter *head, const char *filename)
     }
 
     fclose(fp);
+}
+
+struct config_parameter *get_config_parameter(struct config_parameter *head, const char *key) {
+    struct config_parameter *cur_node = head;
+    while (cur_node != NULL) {
+        if (strcmp(cur_node->key, key) == 0)
+            return cur_node;
+
+        cur_node = cur_node->next;
+    }
+
+    return NULL;
 }
