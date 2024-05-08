@@ -1,4 +1,5 @@
-#include <ncurses.h>
+#define NCURSES_STATIC
+#include <ncurses/ncurses.h>
 #include <iostream>
 using namespace std;
 
