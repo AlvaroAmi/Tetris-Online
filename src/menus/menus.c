@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "menus.h"
 
+int isLoggedIn = 0;
 
 void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
 int receive_response(SOCKET sock);
@@ -70,7 +71,7 @@ void login(SOCKET sock) {
     scanf("%99s", password);
 
     send_request(sock, "LOGIN", email, password, NULL);
-    receive_response(sock);
+    isLoggedIn = receive_response(sock);
     system("pause");
 }
 
@@ -112,7 +113,7 @@ void register_user(SOCKET sock) {
         } else {
             send_request(sock, "REGISTER", email, password, username);
             registration_successful = receive_response(sock); 
-            
+            system("pause");
             break; 
         }
 
@@ -154,34 +155,64 @@ int contains_at_symbol(const char *email) {
 
 ///////////////////////////////////MENU DISPLAY///////////////////////////////////////
 
+void print_logged_in_menu() {
+    system("cls");
+    print_tetris_logo(); 
+    printf("1. Jugar\n");
+    printf("2. Cerrar Sesion\n");
+    printf("*Pulsa 'q' para salir\n");
+}
 void display_menu(SOCKET sock) {
     char input[10];
     int option;
+
     do {
         clear_screen();
-        print_tetris_logo();
-        printf("1. Iniciar sesion\n");
-        printf("2. Registrarse\n");
-        printf("\n");
-        printf("*Pulsa 'q' para salir\n");
-        printf("\n");
+        if (isLoggedIn == 0) {
+            print_tetris_logo();
+            printf("1. Iniciar sesion\n");
+            printf("2. Registrarse\n");
+            printf("\n");
+            printf("*Pulsa 'q' para salir\n");
+            printf("\n");
 
-        if (!fgets(input, sizeof(input), stdin)) {
-            continue; 
-        }
+            if (!fgets(input, sizeof(input), stdin)) {
+                continue;
+            }
 
-        if (input[0] == 'q' || input[0] == 'Q') {
-            break;
-        }
-
-        option = atoi(input);
-        switch (option) {
-            case 1:
-                login(sock);
+            if (input[0] == 'q' || input[0] == 'Q') {
                 break;
-            case 2:
-                register_user(sock);
-                break;
+            }
+
+            option = atoi(input);
+            switch (option) {
+                case 1:
+                    login(sock);
+                    break;
+                case 2:
+                    register_user(sock);
+                    break;
+            }
+        } else {
+            print_logged_in_menu();
+            if (!fgets(input, sizeof(input), stdin)) {
+                continue;
+            }
+            if (input[0] == 'q' || input[0] == 'Q') {
+                isLoggedIn = 0;
+                continue;
+            }
+
+            option = atoi(input);
+            switch (option) {
+                case 1:
+                    // Call game menu
+                    break;
+                case 2:
+                    isLoggedIn = 0; 
+                    break;
+            }
         }
     } while (1);
 }
+
