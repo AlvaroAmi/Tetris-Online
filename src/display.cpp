@@ -6,13 +6,19 @@
 #else
     #error "Unsupported operating system"
 #endif
+
 #include <iostream>
+#include <sstream>
 using namespace std;
 
-#define WIN_HEIGHT 44
-#define WIN_WIDTH 100
+#define WIN_HEIGHT 46
+#define WIN_WIDTH 102
 #define START_X 0
 #define START_Y 0
+#define MATRIX_COLS 10
+#define MATRIX_ROWS 20
+
+int paint_matrix(WINDOW* win, int (*matrix)[10]);
 
 int main() {
     // WINDOWS
@@ -25,6 +31,29 @@ int main() {
     WINDOW *next_win;
     WINDOW *next_display_win;
 
+    //Test Matrix (To be removed in a future)
+    int matrix[MATRIX_ROWS][MATRIX_COLS] = {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 5, 5, 0, 0, 0, 0, 0},
+        {0, 1, 5, 5, 0, 0, 0, 5, 0, 0},
+        {7, 7, 6, 6, 6, 2, 0, 5, 5, 0},
+        {0, 7, 7, 6, 0, 2, 4, 4, 5, 0},
+        {1, 1, 1, 1, 2, 2, 4, 4, 0, 0}};
+
     //Screen initialization
     initscr();
     if (LINES < WIN_HEIGHT || COLS < WIN_WIDTH) {
@@ -34,16 +63,16 @@ int main() {
     }
 
     outer_win = newwin(WIN_HEIGHT, WIN_WIDTH, START_X, START_Y);
-    display_win = newwin(40, 40, 2, 4);
-    title_win = newwin(10, 50, 4, 48);
+    display_win = newwin(42, 42, 2, 4);
+    title_win = newwin(10, 50, 4, 50);
 
     // Data windows: Score, Level, Lines
-    score_win = newwin(3, 46, 16, 49);
-    level_win = newwin(3, 46, 20, 49);
-    lines_win = newwin(3, 46, 24, 49);
+    score_win = newwin(3, 46, 16, 51);
+    level_win = newwin(3, 46, 20, 51);
+    lines_win = newwin(3, 46, 24, 51);
 
-    next_win = newwin(13, 46, 29, 49);
-    next_display_win = newwin(8, 16, 32, 65);
+    next_win = newwin(13, 46, 29, 51);
+    next_display_win = newwin(8, 16, 32, 67);
     
     refresh();
 
@@ -87,8 +116,62 @@ int main() {
     wrefresh(next_win);
     wrefresh(next_display_win);
 
+    paint_matrix(display_win, matrix);
+
     getch(); 
 
     endwin();
+    return 0;
+} 
+
+int paint_matrix(WINDOW* win, int (*matrix)[10]) 
+{
+    start_color();
+    assume_default_colors(COLOR_WHITE, COLOR_BLACK);
+
+    // COLOR-PAIR INITIALIZATION
+    // I Tetrominoid: Cyan (1)
+    init_pair(1, COLOR_BLACK, COLOR_CYAN);
+    // J Tetrominoid: Blue (2)
+    init_pair(2, COLOR_BLACK, COLOR_BLUE);
+    // L Tetrominoid: Orange/White (3)
+    init_pair(3, COLOR_BLACK, COLOR_WHITE);
+    // O Tetrominoid: Yellow (4)
+    init_pair(4, COLOR_BLACK, COLOR_YELLOW);
+    // S Tetrominoid: Green (5)
+    init_pair(5, COLOR_BLACK, COLOR_GREEN);
+    // T Tetrominoid: Purple (6)
+    init_pair(6, COLOR_BLACK, COLOR_MAGENTA);
+    // Z Tetrominoid: Red (7)
+    init_pair(7, COLOR_BLACK, COLOR_RED);
+    // Default
+    init_pair(9, COLOR_BLACK, COLOR_BLACK);
+    
+    int row;
+    int column;
+    for(row = 0; row < MATRIX_ROWS; row++)
+    {
+        for(column = 0; column < MATRIX_COLS; column++)
+        {
+            int value = matrix[row][column];
+            int x_coordinate = 1 + column*4;
+            int y_coordinate = 1 + row*2;
+
+            if(value == 0) {
+                wattron(win, COLOR_PAIR(9));
+                mvwaddstr(win, y_coordinate, x_coordinate, "    ");
+                mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
+                wattroff(win, COLOR_PAIR(9)); 
+            } else {
+                wattron(win, COLOR_PAIR(value));
+                mvwaddstr(win, y_coordinate, x_coordinate, "    ");
+                mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
+                wattroff(win, COLOR_PAIR(value)); 
+            }
+
+            wrefresh(win);
+        }
+    }
+    
     return 0;
 }
