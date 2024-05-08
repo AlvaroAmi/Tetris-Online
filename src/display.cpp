@@ -1,5 +1,11 @@
-#define NCURSES_STATIC
-#include <ncurses/ncurses.h>
+#if defined(_WIN32) || defined(_WIN64)
+    #define NCURSES_STATIC
+    #include <ncurses/ncurses.h>
+#elif defined(__APPLE__) || defined(__linux__)
+    #include <ncurses.h>
+#else
+    #error "Unsupported operating system"
+#endif
 #include <iostream>
 using namespace std;
 
@@ -8,7 +14,7 @@ using namespace std;
 #define START_X 0
 #define START_Y 0
 
-int show_display() {
+int main() {
     // WINDOWS
     WINDOW *outer_win;
     WINDOW *display_win;
