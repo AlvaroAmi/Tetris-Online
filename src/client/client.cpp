@@ -58,17 +58,24 @@ void send_request(SOCKET sock, const char* command, const char* email, const cha
 
 }
 
-void receive_response(SOCKET sock) {
+int receive_response(SOCKET sock) {
     char server_reply[200];
     int recv_size;
 
     if ((recv_size = recv(sock, server_reply, 200, 0)) == SOCKET_ERROR) {
-        cerr << "recv failed: " << WSAGetLastError() << endl;
-        return;
+        std::cerr << "recv failed: " << WSAGetLastError() << std::endl;
+        return 0; 
     }
 
-    server_reply[recv_size] = '\0';
+    server_reply[recv_size] = '\0'; 
+
     cout << "Server reply: " << server_reply << endl;
+
+    if (strcmp(server_reply, "Login successful") == 0 || strcmp(server_reply, "Registration successful") == 0) {
+        return 1; 
+    }
+
+    return 0; 
 }
 
 int main() {

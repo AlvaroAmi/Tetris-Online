@@ -4,15 +4,11 @@
 #include <string>
 #include <thread> 
 #include <sqlite3.h>
-#include <iostream>
 #include "menus.h"
-#include "sqlite3.h"
-
-
 
 using namespace std;
 
-#define SERVER_IP "127.0.0.1"
+#define SERVER_IP "127.0.0.1" //Change to use config files
 #define SERVER_PORT 6000
 
 sqlite3* db;
@@ -24,9 +20,6 @@ bool open_database(const char* db_path) {
     }
     return true;
 }
-
-#include <iostream>
-#include <sqlite3.h>
 
 bool authenticate_user(const char* email, const char* password) {
     sqlite3_stmt* stmt;
@@ -94,7 +87,7 @@ void process_request(char* request, SOCKET communication_socket) {
     char* command = strtok(request, "|");
     char* email = strtok(NULL, "|");
     char* password = strtok(NULL, "|");
-    char* username = strtok(NULL, "|");  // Extraer el nombre de usuario si está presente
+    char* username = strtok(NULL, "|");  
 
     if (email == nullptr || password == nullptr) {
         const char* response = "Invalid request format";
@@ -111,7 +104,7 @@ void process_request(char* request, SOCKET communication_socket) {
             send(communication_socket, response, strlen(response), 0);
         }
     } else if (strcmp(command, "REGISTER") == 0) {
-        if (username == nullptr) { // Verificar si el nombre de usuario está presente
+        if (username == nullptr) { 
             const char* response = "Username required";
             send(communication_socket, response, strlen(response), 0);
             return;

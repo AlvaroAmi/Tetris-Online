@@ -9,7 +9,7 @@ extern "C" {
 
 void display_menu(SOCKET sock);
 void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
-void receive_response(SOCKET sock);
+int receive_response(SOCKET sock);
 
 #ifdef __cplusplus
 }

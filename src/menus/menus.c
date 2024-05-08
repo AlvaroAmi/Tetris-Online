@@ -6,7 +6,7 @@
 
 
 void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
-void receive_response(SOCKET sock);
+int receive_response(SOCKET sock);
 void clear_screen();
 int has_uppercase(const char *str);
 int has_special_char(const char *str);
@@ -110,8 +110,9 @@ void register_user(SOCKET sock) {
             printf("El correo debe contener un simbolo '@'.\n");
             system("pause");
         } else {
-            registration_successful = 1; //Replace 1 by server response
-            // TODO: CALL SOCKET
+            send_request(sock, "REGISTER", email, password, username);
+            registration_successful = receive_response(sock); 
+            
             break; 
         }
 
