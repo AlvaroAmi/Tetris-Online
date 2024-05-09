@@ -62,6 +62,11 @@ int main() {
         return 1;
     }
 
+    cbreak();             // Don't wait for Enter key
+    noecho();             // Don't echo any keypresses
+    keypad(stdscr, TRUE); // Allow for arrow key input
+    curs_set(0);          // Hide cursor
+
     outer_win = newwin(WIN_HEIGHT, WIN_WIDTH, START_X, START_Y);
     display_win = newwin(42, 42, 2, 4);
     title_win = newwin(10, 50, 4, 50);
