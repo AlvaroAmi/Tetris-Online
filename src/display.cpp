@@ -18,6 +18,13 @@ using namespace std;
 #define MATRIX_COLS 10
 #define MATRIX_ROWS 20
 
+#define CUSTOM_RED 16
+#define CUSTOM_GREEN 17
+#define CUSTOM_YELLOW 18
+#define CUSTOM_BLUE 19
+#define CUSTOM_CYAN 20
+#define CUSTOM_ORANGE 21
+
 void init_colors(void);
 int paint_matrix(WINDOW *win, int (*matrix)[10]);
 
@@ -49,9 +56,9 @@ int main() {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 5, 5, 0, 0, 0, 0, 0},
-        {0, 1, 5, 5, 0, 0, 0, 5, 0, 0},
-        {7, 7, 6, 6, 6, 2, 0, 5, 5, 0},
+        {0, 1, 0, 5, 5, 3, 3, 0, 0, 0},
+        {0, 1, 5, 5, 0, 0, 3, 5, 0, 0},
+        {7, 7, 6, 6, 6, 2, 3, 5, 5, 0},
         {0, 7, 7, 6, 0, 2, 4, 4, 5, 0},
         {1, 1, 1, 1, 2, 2, 4, 4, 0, 0}};
 
@@ -140,17 +147,32 @@ void init_colors(void) {
     }
 
     start_color();
-    init_pair(Color::CYAN, COLOR_CYAN, COLOR_BLACK);
-    init_pair(Color::BLUE, COLOR_BLUE, COLOR_BLACK);
-    init_pair(Color::ORANGE, COLOR_WHITE, COLOR_BLACK);
-    init_pair(Color::YELLOW, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(Color::GREEN, COLOR_GREEN, COLOR_BLACK);
-    init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
-    init_pair(Color::RED, COLOR_RED, COLOR_BLACK);
 
     // In case the terminal supports custom colors
-    init_color(Color::ORANGE, 1000, 500, 0);
-    init_color(Color::YELLOW, 920, 800, 180);
+    if (COLORS >= CUSTOM_ORANGE && COLOR_PAIRS >= CUSTOM_ORANGE && can_change_color()) {
+        init_color(CUSTOM_RED, 956, 262, 211);
+        init_color(CUSTOM_GREEN, 298, 686, 313);
+        init_color(CUSTOM_YELLOW, 1000, 921, 230);
+        init_color(CUSTOM_BLUE, 247, 317, 860);
+        init_color(CUSTOM_CYAN, 0, 737, 831);
+        init_color(CUSTOM_ORANGE, 1000, 596, 0);
+
+        init_pair(Color::CYAN, CUSTOM_CYAN, COLOR_BLACK);
+        init_pair(Color::BLUE, CUSTOM_BLUE, COLOR_BLACK);
+        init_pair(Color::ORANGE, CUSTOM_ORANGE, COLOR_BLACK);
+        init_pair(Color::YELLOW, CUSTOM_YELLOW, COLOR_BLACK);
+        init_pair(Color::GREEN, CUSTOM_GREEN, COLOR_BLACK);
+        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(Color::RED, CUSTOM_RED, COLOR_BLACK);
+    } else {
+        init_pair(Color::CYAN, COLOR_CYAN, COLOR_BLACK);
+        init_pair(Color::BLUE, COLOR_BLUE, COLOR_BLACK);
+        init_pair(Color::ORANGE, COLOR_WHITE, COLOR_BLACK);
+        init_pair(Color::YELLOW, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(Color::GREEN, COLOR_GREEN, COLOR_BLACK);
+        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(Color::RED, COLOR_RED, COLOR_BLACK);
+    }
 }
 
 int paint_matrix(WINDOW *win, int (*matrix)[10]) {
