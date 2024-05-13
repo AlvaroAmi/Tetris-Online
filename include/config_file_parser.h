@@ -3,18 +3,22 @@
 
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum config_parameter_type {
     INTEGER,
     REAL,
     STRING,
-    BOOLEAN
+    CONFIG_BOOLEAN  
 };
 
 union config_parameter_value {
     long long integer;
     double real;
     char *string;
-    int boolean;
+    int config_boolean;  
 };
 
 struct config_parameter {
@@ -29,4 +33,8 @@ void free_config_parameters(struct config_parameter *head);
 void save_config_parameters(struct config_parameter *head, const char *filename);
 struct config_parameter *get_config_parameter(struct config_parameter *head, const char *key);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // CONFIG_FILE_PARSER_H

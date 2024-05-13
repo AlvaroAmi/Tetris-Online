@@ -48,7 +48,7 @@ static int is_boolean(const char *s) {
 }
 
 static void parser_error(struct parser *parser, const char *message) {
-    fprintf(stderr, "Error at line %ld, column %ld: %s\n", parser->line, parser->cursor - parser->beginning_of_line, message);
+    fprintf(stderr, "Error at line %ld, column %ld: %s\n", parser->line, parser->cursor - parser->beginning_of_line + 1, message);
     exit(1);
 }
 
@@ -178,8 +178,8 @@ static struct config_parameter *next_config_parameter(struct parser *parser) {
                 char *value_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
                 if (is_boolean(value_str)) {
-                    parameter->type = BOOLEAN;
-                    parameter->value.boolean = strcmp(value_str, "true") == 0;
+                    parameter->type = CONFIG_BOOLEAN;  
+                    parameter->value.config_boolean = strcmp(value_str, "true") == 0;  
                     free(value_str);
                     return parameter;
                 }
@@ -198,21 +198,25 @@ static struct config_parameter *next_config_parameter(struct parser *parser) {
 struct config_parameter *read_config_file(const char *filename) {
     FILE *fp = fopen(filename, "r");
 
+    if (!fp) {
+        fprintf(stderr, "Error opening file: %s\n", filename);
+        exit(1);
+    }
+
     fseek(fp, 0, SEEK_END);
     long fpsize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
     struct parser parser = {
-        .src = malloc(fpsize),
+        .src = malloc(fpsize + 1),
         .cursor = 0,
         .src_length = fpsize,
         .line = 1,
         .beginning_of_line = 0,
-        .state = EXPECTING_IDENTIFIER, // No need but whatever
+        .state = EXPECTING_IDENTIFIER
     };
 
-    // Read the file into memory
-    fread(parser.src, fpsize, 1, fp);
+    fread(parser.src, 1, fpsize, fp);
     parser.src[fpsize] = '\0';
     fclose(fp);
 
@@ -248,6 +252,10 @@ void free_config_parameters(struct config_parameter *head) {
 
 void save_config_parameters(struct config_parameter *head, const char *filename) {
     FILE *fp = fopen(filename, "w");
+    if (!fp) {
+        fprintf(stderr, "Error opening file for writing: %s\n", filename);
+        exit(1);
+    }
 
     struct config_parameter *cur_node = head;
     while (cur_node != NULL) {
@@ -264,8 +272,8 @@ void save_config_parameters(struct config_parameter *head, const char *filename)
             fprintf(fp, "%s = \"%s\"\n", cur_node->key, cur_node->value.string);
             break;
 
-        case BOOLEAN:
-            fprintf(fp, "%s = %s\n", cur_node->key, cur_node->value.boolean ? "true" : "false");
+        case CONFIG_BOOLEAN:
+            fprintf(fp, "%s = %s\n", cur_node->key, cur_node->value.config_boolean ? "true" : "false");
             break;
         }
 
@@ -274,6 +282,7 @@ void save_config_parameters(struct config_parameter *head, const char *filename)
 
     fclose(fp);
 }
+
 
 struct config_parameter *get_config_parameter(struct config_parameter *head, const char *key) {
     struct config_parameter *cur_node = head;
@@ -286,3 +295,4 @@ struct config_parameter *get_config_parameter(struct config_parameter *head, con
 
     return NULL;
 }
+
