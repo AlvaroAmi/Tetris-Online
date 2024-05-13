@@ -18,7 +18,7 @@ g++ database.o menus.o sqlite3.o client.o -o bin/client.exe -lws2_32
 
 Servidor:
 g++ -c src/server/server.cpp -Iinclude
-g++ database.o sqlite3.o server.o -o bin/server.exe -lws2_32
+g++ database.o sqlite3.o config_file_parser.o server.o -o bin/server.exe -lws2_32
 
 ```
 
