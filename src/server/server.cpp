@@ -7,11 +7,12 @@
 #include <thread>
 #include <sqlite3.h>
 #include "menus.h"
+#include "config_file_parser.h"  
 
 using namespace std;
 
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT 6000
+#define DEFAULT_SERVER_IP "127.0.0.1" //Valores por defecto si hay un error leyendo del fichero de config
+#define DEFAULT_SERVER_PORT 6000
 
 sqlite3* db;
 ofstream logFile;
@@ -156,6 +157,17 @@ int main() {
         return -1;
     }
 
+    struct config_parameter *config = read_config_file("serverconfig.txt");
+    if (!config) {
+        log("Failed to read the server configuration file.", "ERROR");
+        logFile.close();
+        return -1;
+    }
+    struct config_parameter *ip_param = get_config_parameter(config, "SERVER_IP");
+    struct config_parameter *port_param = get_config_parameter(config, "SERVER_PORT");
+    string server_ip = ip_param ? ip_param->value.string : DEFAULT_SERVER_IP;
+    int server_port = port_param ? port_param->value.integer : DEFAULT_SERVER_PORT;
+
     if (!open_database("TetrisOnline.db")) {
         logFile.close();
         return 1;
@@ -165,6 +177,7 @@ int main() {
     if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
         log("WSAStartup failed. Error Code : " + to_string(WSAGetLastError()), "ERROR");
         logFile.close();
+        free_config_parameters(config);
         return -1;
     }
 
@@ -173,18 +186,20 @@ int main() {
         log("Could not create socket : " + to_string(WSAGetLastError()), "ERROR");
         WSACleanup();
         logFile.close();
+        free_config_parameters(config);
         return -1;
     }
 
-    server_address.sin_addr.s_addr = inet_addr(SERVER_IP);
+    server_address.sin_addr.s_addr = inet_addr(server_ip.c_str());
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(SERVER_PORT);
+    server_address.sin_port = htons(server_port);
 
     if (bind(connection_socket, (struct sockaddr*)&server_address, sizeof(server_address)) == SOCKET_ERROR) {
         log("Bind failed with error code: " + to_string(WSAGetLastError()), "ERROR");
         closesocket(connection_socket);
         WSACleanup();
         logFile.close();
+        free_config_parameters(config);
         return -1;
     }
 
@@ -193,6 +208,7 @@ int main() {
         closesocket(connection_socket);
         WSACleanup();
         logFile.close();
+        free_config_parameters(config);
         return -1;
     }
 
@@ -200,7 +216,7 @@ int main() {
     int client_size = sizeof(struct sockaddr_in);
     while ((communication_socket = accept(connection_socket, (struct sockaddr*)&client_address, &client_size)) != INVALID_SOCKET) {
         log("Connection accepted.", "INFO");
-        
+
         thread client_thread(client_handler, communication_socket);
         client_thread.detach();
     }
@@ -208,5 +224,6 @@ int main() {
     closesocket(connection_socket);
     WSACleanup();
     logFile.close();
+    free_config_parameters(config);
     return 0;
 }
