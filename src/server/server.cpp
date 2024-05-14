@@ -107,7 +107,7 @@ int main() {
         return -1;
     }
 
-    struct config_parameter *config = read_config_file("example_config_file.txt");
+    struct config_parameter *config = read_config_file("serverconfig.txt");
     if (!config) {
         log("Failed to read the server configuration file.", "ERROR");
         logFile.close();
