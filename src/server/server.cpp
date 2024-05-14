@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define DEFAULT_SERVER_IP "127.0.0.1" //Valores por defecto si hay un error leyendo del fichero de config
+#define DEFAULT_SERVER_IP "127.0.0.1" //Default values if config file fails
 #define DEFAULT_SERVER_PORT 6000
 
 sqlite3* db;
@@ -151,7 +151,7 @@ int main() {
     SOCKET connection_socket, communication_socket;
     struct sockaddr_in server_address, client_address;
 
-    logFile.open("server.log", ios::out | ios::app);
+    logFile.open("server_log.log", ios::out | ios::app);
     if (!logFile.is_open()) {
         cerr << "Failed to open log file." << endl;
         return -1;
