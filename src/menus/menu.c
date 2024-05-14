@@ -177,7 +177,7 @@ int log_in() {
         char *control_option = &option;
         char **result = log_in_menu(control_option); 
         if (option == '\n') {
-            rc = show_user(db, result[0], result[1]);
+            rc = authenticate_user(db, result[0], result[1]);
             if (rc == 1) {
                 printf("Inicio de sesion exitoso\n");
                 system("pause");
@@ -311,7 +311,7 @@ void register_user() {
         }
 
         
-        rc = insert_user(db, username, email, password, 0); 
+        rc = db_register_user(db, username, email, password); 
         if (rc != SQLITE_OK) {
             printf("Error al registrar el usuario: %s\n", sqlite3_errmsg(db));
             system("pause");

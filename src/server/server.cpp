@@ -7,11 +7,12 @@
 #include <thread>
 #include <sqlite3.h>
 #include "menus.h"
-#include "config_file_parser.h"  
+#include "config_file_parser.h"
+#include "database.h"
 
 using namespace std;
 
-#define DEFAULT_SERVER_IP "127.0.0.1" //Valores por defecto si hay un error leyendo del fichero de config
+#define DEFAULT_SERVER_IP "127.0.0.1"
 #define DEFAULT_SERVER_PORT 6000
 
 sqlite3* db;
@@ -34,57 +35,6 @@ bool open_database(const char* db_path) {
     return true;
 }
 
-bool authenticate_user(const char* email, const char* password) {
-    sqlite3_stmt* stmt;
-    const char* sql = "SELECT 1 FROM USER WHERE email = ? AND password = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        log("Error preparing login statement: " + string(sqlite3_errmsg(db)), "ERROR");
-        return false;
-    }
-
-    if (sqlite3_bind_text(stmt, 1, email, -1, SQLITE_STATIC) != SQLITE_OK ||
-        sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC) != SQLITE_OK) {
-        log("Error binding login parameters.", "ERROR");
-        sqlite3_finalize(stmt);
-        return false;
-    }
-
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        log("Login successful for: " + string(email), "INFO");
-        sqlite3_finalize(stmt);
-        return true;
-    } else {
-        log("Login failed for: " + string(email), "WARNING");
-        sqlite3_finalize(stmt);
-        return false;
-    }
-}
-
-bool register_user(const char* email, const char* password, const char* username) {
-    sqlite3_stmt* stmt;
-    const char* sql = "INSERT INTO USER (email, password, username) VALUES (?, ?, ?);";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        log("Error preparing register statement: " + string(sqlite3_errmsg(db)), "ERROR");
-        return false;
-    }
-
-    sqlite3_bind_text(stmt, 1, email, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, username, -1, SQLITE_STATIC);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE) {
-        log("Error registering new user: " + string(sqlite3_errmsg(db)), "ERROR");
-        sqlite3_finalize(stmt);
-        return false;
-    }
-
-    log("Registration successful for: " + string(email), "INFO");
-    sqlite3_finalize(stmt);
-    return true;
-}
-
 void process_request(char* request, SOCKET communication_socket) {
     char* command = strtok(request, "|");
     char* email = strtok(NULL, "|");
@@ -99,7 +49,7 @@ void process_request(char* request, SOCKET communication_socket) {
     }
 
     if (strcmp(command, "LOGIN") == 0) {
-        if (authenticate_user(email, password)) {
+        if (authenticate_user(db, email, password) == 1) { // Cambiado aquí
             const char* response = "Login successful";
             send(communication_socket, response, strlen(response), 0);
         } else {
@@ -112,7 +62,7 @@ void process_request(char* request, SOCKET communication_socket) {
             send(communication_socket, response, strlen(response), 0);
             return;
         }
-        if (register_user(email, password, username)) {
+        if (db_register_user(db, email, password, username) == 1) { // Cambiado aquí
             const char* response = "Registration successful";
             send(communication_socket, response, strlen(response), 0);
         } else {
@@ -157,7 +107,7 @@ int main() {
         return -1;
     }
 
-    struct config_parameter *config = read_config_file("serverconfig.txt");
+    struct config_parameter *config = read_config_file("example_config_file.txt");
     if (!config) {
         log("Failed to read the server configuration file.", "ERROR");
         logFile.close();

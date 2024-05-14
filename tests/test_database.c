@@ -10,26 +10,32 @@ int main() {
         return result;
     }
 
-    // Insertar usuario
-    result = insert_user(db, "new_username", "new_user@example.com", "new_password", 0);
-    if (result != SQLITE_OK) {
-        printf("Error al insertar nuevo usuario\n");
+    // Registrar usuario
+    result = db_register_user(db, "new_user@example.com", "new_password", "new_username");
+    if (result != SQLITE_DONE) {
+        printf("Error al registrar nuevo usuario\n");
         sqlite3_close(db);
         return result;
+    } else {
+        printf("Nuevo usuario registrado exitosamente\n");
     }
 
-    // Ejemplo de inicio de sesión de un usuario
-    result = show_user(db, "username", "password123");
-    if (result != SQLITE_OK) {
-        printf("Error showing user\n");
+    // Autenticar usuario
+    result = authenticate_user(db, "new_user@example.com", "new_password");
+    if (result == 1) {
+        printf("Usuario autenticado exitosamente\n");
+    } else {
+        printf("Error al autenticar usuario\n");
     }
 
     // Eliminar usuario
-    result = delete_user(db, "old_username");
-    if (result != SQLITE_OK) {
+    result = delete_user(db, "new_user@example.com");
+    if (result != SQLITE_DONE) {
         printf("Error al borrar usuario\n");
         sqlite3_close(db);
         return result;
+    } else {
+        printf("Usuario borrado exitosamente\n");
     }
 
     result = sqlite3_close(db);

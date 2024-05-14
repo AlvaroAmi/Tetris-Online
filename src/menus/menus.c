@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "menus.h"
+#include "database.h"
 
 int isLoggedIn = 0;
 
