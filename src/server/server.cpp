@@ -101,7 +101,7 @@ int main() {
     SOCKET connection_socket, communication_socket;
     struct sockaddr_in server_address, client_address;
 
-    logFile.open("server.log", ios::out | ios::app);
+    logFile.open("server_log.log", ios::out | ios::app);
     if (!logFile.is_open()) {
         cerr << "Failed to open log file." << endl;
         return -1;

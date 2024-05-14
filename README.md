@@ -15,7 +15,7 @@ g++ -c src/database/database.c -Iinclude -o database.o
 
 Cliente:
 g++ -c src/client/client.cpp -Iinclude
-g++ database.o menus.o sqlite3.o client.o -o bin/client.exe -lws2_32
+g++ database.o menus.o config_file_parser.o sqlite3.o client.o -o bin/client.exe -lws2_32
 
 Servidor:
 g++ -c src/server/server.cpp -Iinclude
