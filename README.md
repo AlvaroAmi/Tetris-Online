@@ -14,7 +14,7 @@ gcc -c src/database/database.c src/files/*.c src/menus/*.c src/main.c lib/sqlite
 
 Cliente:
 g++ -c src/client/client.cpp -Iinclude
-g++ database.o menus.o sqlite3.o client.o -o bin/client.exe -lws2_32
+g++ database.o menus.o config_file_parser.o sqlite3.o client.o -o bin/client.exe -lws2_32
 
 Servidor:
 g++ -c src/server/server.cpp -Iinclude
