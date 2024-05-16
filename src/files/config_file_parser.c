@@ -92,28 +92,35 @@ static void parse_string(struct parser *parser, struct config_parameter *config_
 
 static void parse_number(struct parser *parser, struct config_parameter *config_parameter) {
     size_t first_char_position = parser->cursor - 1;
-    skip_while_not(parser, isspace);
+    
+    while (!is_eof(parser) && (isdigit(parser->src[parser->cursor]) || parser->src[parser->cursor] == '.' || parser->src[parser->cursor] == '+' || parser->src[parser->cursor] == '-')) {
+        parser->cursor++;
+    }
+    
     char *number_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
-    // Maybe it's an integer
+
     char *endptr;
     config_parameter->value.integer = strtoll(number_str, &endptr, 10);
 
-    // The value was indeed an integer
+    // Check if the conversion to integer was successful
     if (*endptr == '\0') {
         config_parameter->type = INTEGER;
+        free(number_str);
         return;
     }
 
-    // Maybe it's a real number
+    // Try to convert the string to a double (real number)
     config_parameter->value.real = strtod(number_str, &endptr);
 
+    // Check if the conversion to double was successful
     if (*endptr == '\0') {
         config_parameter->type = REAL;
+        free(number_str);
         return;
     }
 
-    // If it's not a number, it's an error
+    free(number_str);
     parser_error(parser, "Invalid number");
 }
 
@@ -178,8 +185,8 @@ static struct config_parameter *next_config_parameter(struct parser *parser) {
                 char *value_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
                 if (is_boolean(value_str)) {
-                    parameter->type = CONFIG_BOOLEAN;  
-                    parameter->value.config_boolean = strcmp(value_str, "true") == 0;  
+                    parameter->type = CONFIG_BOOLEAN;
+                    parameter->value.config_boolean = strcmp(value_str, "true") == 0;
                     free(value_str);
                     return parameter;
                 }
@@ -283,7 +290,6 @@ void save_config_parameters(struct config_parameter *head, const char *filename)
     fclose(fp);
 }
 
-
 struct config_parameter *get_config_parameter(struct config_parameter *head, const char *key) {
     struct config_parameter *cur_node = head;
     while (cur_node != NULL) {
@@ -295,4 +301,3 @@ struct config_parameter *get_config_parameter(struct config_parameter *head, con
 
     return NULL;
 }
-
