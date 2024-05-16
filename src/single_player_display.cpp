@@ -8,8 +8,8 @@
 #endif
 
 #include "tetris/tetromino.hpp"
-#include <iostream>
 #include "display.hpp"
+#include <iostream>
 using namespace std;
 
 #define WIN_HEIGHT 46
@@ -19,18 +19,7 @@ using namespace std;
 #define MATRIX_COLS 10
 #define MATRIX_ROWS 20
 
-#define CUSTOM_RED 16
-#define CUSTOM_GREEN 17
-#define CUSTOM_YELLOW 18
-#define CUSTOM_BLUE 19
-#define CUSTOM_CYAN 20
-#define CUSTOM_ORANGE 21
-
-void init_colors(void);
-int paint_matrix(WINDOW *win, int (*matrix)[10]);
-int paint_next_tetromino(WINDOW *win, TetrominoType tt);
-
-int single_player() {
+int single_player_display() {
     // WINDOWS
     WINDOW *outer_win;
     WINDOW *display_win;
@@ -139,75 +128,4 @@ int single_player() {
 
     endwin();
     return 0;
-}
-
-void init_colors(void) {
-    if (!has_colors()) {
-        endwin();
-        fprintf(stderr, "Error - no color support on this terminal\n");
-        exit(1);
-    }
-
-    start_color();
-
-    // In case the terminal supports custom colors
-    if (COLORS >= CUSTOM_ORANGE && COLOR_PAIRS >= CUSTOM_ORANGE && can_change_color()) {
-        init_color(CUSTOM_RED, 956, 262, 211);
-        init_color(CUSTOM_GREEN, 298, 686, 313);
-        init_color(CUSTOM_YELLOW, 1000, 921, 230);
-        init_color(CUSTOM_BLUE, 247, 317, 860);
-        init_color(CUSTOM_CYAN, 0, 737, 831);
-        init_color(CUSTOM_ORANGE, 1000, 596, 0);
-
-        init_pair(Color::CYAN, CUSTOM_CYAN, COLOR_BLACK);
-        init_pair(Color::BLUE, CUSTOM_BLUE, COLOR_BLACK);
-        init_pair(Color::ORANGE, CUSTOM_ORANGE, COLOR_BLACK);
-        init_pair(Color::YELLOW, CUSTOM_YELLOW, COLOR_BLACK);
-        init_pair(Color::GREEN, CUSTOM_GREEN, COLOR_BLACK);
-        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(Color::RED, CUSTOM_RED, COLOR_BLACK);
-    } else {
-        init_pair(Color::CYAN, COLOR_CYAN, COLOR_BLACK);
-        init_pair(Color::BLUE, COLOR_BLUE, COLOR_BLACK);
-        init_pair(Color::ORANGE, COLOR_WHITE, COLOR_BLACK);
-        init_pair(Color::YELLOW, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(Color::GREEN, COLOR_GREEN, COLOR_BLACK);
-        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(Color::RED, COLOR_RED, COLOR_BLACK);
-    }
-}
-
-int paint_matrix(WINDOW *win, int (*matrix)[10]) {
-    start_color();
-    wattron(win, A_REVERSE);
-
-    int row;
-    int column;
-    for (row = 0; row < MATRIX_ROWS; row++) {
-        for (column = 0; column < MATRIX_COLS; column++) {
-            int value = matrix[row][column];
-            int x_coordinate = 1 + column * 4;
-            int y_coordinate = 1 + row * 2;
-
-            if (value == 0) {
-                wattron(win, COLOR_PAIR(9));
-                mvwaddstr(win, y_coordinate, x_coordinate, "    ");
-                mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
-                wattroff(win, COLOR_PAIR(9));
-            } else {
-                wattron(win, COLOR_PAIR(value));
-                mvwaddstr(win, y_coordinate, x_coordinate, "    ");
-                mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
-                wattroff(win, COLOR_PAIR(value));
-            }
-
-            wrefresh(win);
-        }
-    }
-    wattroff(win, A_REVERSE);
-    return 0;
-}
-
-int paint_next_tetromino(WINDOW *win, TetrominoType tt) {
-
 }
