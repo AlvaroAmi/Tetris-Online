@@ -36,3 +36,10 @@ gcc -o bin/test_config_file_parser src/files/config_file_parser.c tests/test_con
 ```
 ./bin/test_config_file_parser
 ```
+
+##### Test sockets
+
+```
+g++ .\test_client1.cpp -o Client1.exe -lws2_32
+g++ .\test_client2.cpp -o Client2.exe -lws2_32
+```
