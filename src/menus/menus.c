@@ -5,14 +5,18 @@
 #include "menus.h"
 #include "database.h"
 
-int isLoggedIn = 0;
+extern void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
+extern int receive_response(SOCKET sock);
+extern void clear_screen();
+extern int has_uppercase(const char *str);
+extern int has_special_char(const char *str);
+extern int contains_at_symbol(const char *email);
+extern void start_listener_thread(SOCKET sock);
+extern void stop_listener_thread();
+extern void send_game_start(SOCKET sock);
+extern void send_game_finish(SOCKET sock);
 
-void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
-int receive_response(SOCKET sock);
-void clear_screen();
-int has_uppercase(const char *str);
-int has_special_char(const char *str);
-int contains_at_symbol(const char *email);
+int isLoggedIn = 0;
 
 //////////////////////////////////////ASTHETICS///////////////////////////////////////
 
@@ -73,6 +77,11 @@ void login(SOCKET sock) {
 
     send_request(sock, "LOGIN", email, password, NULL);
     isLoggedIn = receive_response(sock);
+
+    if (isLoggedIn) {
+        start_listener_thread(sock);
+    }
+    
     system("pause");
 }
 
@@ -120,6 +129,17 @@ void register_user(SOCKET sock) {
 
     } while (!registration_successful);
 }
+
+void start_game(SOCKET sock) {
+    send_game_start(sock);
+    // Add game logic here
+}
+
+void finish_game(SOCKET sock) {
+    send_game_finish(sock);
+    // Add game finish logic here
+}
+
 ///////////////////////////////////OTHER METHODS///////////////////////////////////////
 
 void clear_screen() {
@@ -163,6 +183,7 @@ void print_logged_in_menu() {
     printf("2. Cerrar Sesion\n");
     printf("*Pulsa 'q' para salir\n");
 }
+
 void display_menu(SOCKET sock) {
     char input[10];
     int option;
@@ -201,19 +222,22 @@ void display_menu(SOCKET sock) {
             }
             if (input[0] == 'q' || input[0] == 'Q') {
                 isLoggedIn = 0;
+                stop_listener_thread();
+                finish_game(sock);
                 continue;
             }
 
             option = atoi(input);
             switch (option) {
                 case 1:
-                    // Call game menu
+                    start_game(sock);
                     break;
                 case 2:
                     isLoggedIn = 0; 
+                    stop_listener_thread();
+                    finish_game(sock);
                     break;
             }
         }
     } while (1);
 }
-

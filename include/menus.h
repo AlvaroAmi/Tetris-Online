@@ -10,6 +10,10 @@ extern "C" {
 void display_menu(SOCKET sock);
 void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
 int receive_response(SOCKET sock);
+extern void start_listener_thread(SOCKET sock);
+extern void stop_listener_thread();
+extern void send_game_start(SOCKET sock);
+extern void send_game_finish(SOCKET sock);
 
 #ifdef __cplusplus
 }

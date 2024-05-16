@@ -4,15 +4,19 @@
 #include <winsock2.h>
 #include <cstring>
 #include <string>
+#include <thread>
+#include <atomic>
 #include "menus.h"
 #include "config_file_parser.h"
 
 using namespace std;
 
-#define DEFAULT_SERVER_IP "127.0.0.1" //Default values if config file fails
+#define DEFAULT_SERVER_IP "127.0.0.1" // Default values if config file fails
 #define DEFAULT_SERVER_PORT 6000
 
-ofstream logFile("client_log.log", ios::app); 
+ofstream logFile("client_log.log", ios::app);
+atomic<bool> keep_running(false);
+thread listener_thread;
 
 void log(const string& message, const string& level) {
     time_t now = time(0);
@@ -69,7 +73,7 @@ SOCKET connect_to_server() {
 }
 
 void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username) {
-    char message[256]; 
+    char message[256];
 
     if (username != NULL) {
         sprintf(message, "%s|%s|%s|%s", command, email, password, username);
@@ -92,19 +96,97 @@ int receive_response(SOCKET sock) {
     if ((recv_size = recv(sock, server_reply, 200, 0)) == SOCKET_ERROR) {
         std::cerr << "recv failed: " << WSAGetLastError() << std::endl;
         log("recv failed: " + to_string(WSAGetLastError()), "ERROR");
-        return 0; 
+        return 0;
     }
 
-    server_reply[recv_size] = '\0'; 
+    server_reply[recv_size] = '\0';
 
     cout << "Server reply: " << server_reply << endl;
     log("Server reply: " + string(server_reply), "INFO");
 
     if (strcmp(server_reply, "Login successful") == 0 || strcmp(server_reply, "Registration successful") == 0) {
-        return 1; 
+        return 1;
     }
 
-    return 0; 
+    return 0;
+}
+
+void listen_for_updates(SOCKET sock) {
+    char receive_buffer[512];
+    fd_set readfds;
+    struct timeval tv;
+    
+    u_long mode = 1; //Not block mode
+    ioctlsocket(sock, FIONBIO, &mode);
+
+    while (keep_running) {
+        FD_ZERO(&readfds);
+        FD_SET(sock, &readfds);
+
+        tv.tv_sec = 1;
+        tv.tv_usec = 0;
+
+        int activity = select(0, &readfds, NULL, NULL, &tv);
+
+        if (activity == SOCKET_ERROR) {
+            log("Select failed: " + to_string(WSAGetLastError()), "ERROR");
+            break;
+        }
+
+        if (activity > 0 && FD_ISSET(sock, &readfds)) {
+            int bytes_received = recv(sock, receive_buffer, sizeof(receive_buffer) - 1, 0);
+            if (bytes_received == SOCKET_ERROR) {
+                log("Receive failed: " + to_string(WSAGetLastError()), "ERROR");
+                break;
+            } else if (bytes_received == 0) {
+                log("Server disconnected.", "INFO");
+                break;
+            }
+
+            receive_buffer[bytes_received] = '\0';
+            cout << "Update from server: " << receive_buffer << endl;
+            log("Update from server: " + string(receive_buffer), "INFO");
+        }
+    }
+
+    mode = 0; //Block mode
+    ioctlsocket(sock, FIONBIO, &mode);
+}
+
+void send_game_update(SOCKET sock, const string& matrix) {
+    string message = "GAME_UPDATE|" + matrix;
+    if (send(sock, message.c_str(), message.length(), 0) < 0) {
+        std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
+        log("Send failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
+void send_game_start(SOCKET sock) {
+    string message = "GAMESTART";
+    if (send(sock, message.c_str(), message.length(), 0) < 0) {
+        std::cerr << "Send GAMESTART failed: " << WSAGetLastError() << std::endl;
+        log("Send GAMESTART failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
+void send_game_finish(SOCKET sock) {
+    string message = "GAMEFINISH";
+    if (send(sock, message.c_str(), message.length(), 0) < 0) {
+        std::cerr << "Send GAMEFINISH failed: " << WSAGetLastError() << std::endl;
+        log("Send GAMEFINISH failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
+void start_listener_thread(SOCKET sock) {
+    keep_running = true;
+    listener_thread = thread(listen_for_updates, sock);
+}
+
+void stop_listener_thread() {
+    keep_running = false;
+    if (listener_thread.joinable()) {
+        listener_thread.join();
+    }
 }
 
 int main() {
@@ -112,6 +194,8 @@ int main() {
     SOCKET sock = connect_to_server();
     if (sock != INVALID_SOCKET) {
         display_menu(sock);
+        
+        stop_listener_thread();
 
         closesocket(sock);
         log("Socket closed", "INFO");

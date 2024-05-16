@@ -5,6 +5,10 @@
 #include <cstring>
 #include <string>
 #include <thread>
+#include <map>
+#include <vector>
+#include <mutex>
+#include <algorithm>
 #include <sqlite3.h>
 #include "menus.h"
 #include "config_file_parser.h"
@@ -17,6 +21,11 @@ using namespace std;
 
 sqlite3* db;
 ofstream logFile;
+
+mutex clients_mutex; 
+map<int, SOCKET> clients; 
+vector<int> matchmaking_queue; 
+vector<pair<int, int>> pairs; 
 
 void log(const string& message, const string& level) {
     time_t now = time(0);
@@ -35,13 +44,58 @@ bool open_database(const char* db_path) {
     return true;
 }
 
-void process_request(char* request, SOCKET communication_socket) {
-    char* command = strtok(request, "|");
-    char* email = strtok(NULL, "|");
-    char* password = strtok(NULL, "|");
-    char* username = strtok(NULL, "|");
+void add_to_matchmaking_queue(int client_id) {
+    lock_guard<mutex> guard(clients_mutex);
+    matchmaking_queue.push_back(client_id);
+    log("Client " + to_string(client_id) + " added to matchmaking queue", "INFO");
 
-    if (email == nullptr || password == nullptr) {
+    if (matchmaking_queue.size() >= 2) {
+        int client1 = matchmaking_queue.front();
+        matchmaking_queue.erase(matchmaking_queue.begin());
+        int client2 = matchmaking_queue.front();
+        matchmaking_queue.erase(matchmaking_queue.begin());
+
+        pairs.push_back({client1, client2});
+        log("Matched clients " + to_string(client1) + " and " + to_string(client2), "INFO");
+
+        string message = "MATCHED|" + to_string(client2);
+        send(clients[client1], message.c_str(), message.length(), 0);
+        message = "MATCHED|" + to_string(client1);
+        send(clients[client2], message.c_str(), message.length(), 0);
+    }
+}
+
+void remove_from_matchmaking_queue(int client_id) {
+    lock_guard<mutex> guard(clients_mutex);
+    matchmaking_queue.erase(remove(matchmaking_queue.begin(), matchmaking_queue.end(), client_id), matchmaking_queue.end());
+    log("Client " + to_string(client_id) + " removed from matchmaking queue", "INFO");
+}
+
+void forward_to_enemy(int client_id, const string& message) {
+    lock_guard<mutex> guard(clients_mutex);
+
+    //Search enemy ID
+    auto it = find_if(pairs.begin(), pairs.end(), [client_id](const pair<int, int>& p) {
+        return p.first == client_id || p.second == client_id;
+    });
+
+    if (it != pairs.end()) {
+        int enemy_id = (it->first == client_id) ? it->second : it->first;
+
+        if (clients.find(enemy_id) != clients.end()) {
+            SOCKET enemy_socket = clients[enemy_id];
+            send(enemy_socket, message.c_str(), message.length(), 0);
+        }
+    }
+}
+
+void process_request(char* request, SOCKET communication_socket, int client_id) {
+    char* command = strtok(request, "|");
+    char* param1 = strtok(NULL, "|");
+    char* param2 = strtok(NULL, "|");
+    char* param3 = strtok(NULL, "|");
+
+    if (command == nullptr) {
         const char* response = "Invalid request format";
         send(communication_socket, response, strlen(response), 0);
         log("Received invalid request.", "ERROR");
@@ -49,7 +103,15 @@ void process_request(char* request, SOCKET communication_socket) {
     }
 
     if (strcmp(command, "LOGIN") == 0) {
-        if (authenticate_user(db, email, password) == 1) { // Cambiado aquí
+        if (param1 == nullptr || param2 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        const char* email = param1;
+        const char* password = param2;
+        if (authenticate_user(db, email, password) == 1) {
             const char* response = "Login successful";
             send(communication_socket, response, strlen(response), 0);
         } else {
@@ -57,18 +119,49 @@ void process_request(char* request, SOCKET communication_socket) {
             send(communication_socket, response, strlen(response), 0);
         }
     } else if (strcmp(command, "REGISTER") == 0) {
-        if (username == nullptr) {
-            const char* response = "Username required";
+        if (param1 == nullptr || param2 == nullptr || param3 == nullptr) {
+            const char* response = "Invalid request format";
             send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
             return;
         }
-        if (db_register_user(db, email, password, username) == 1) { // Cambiado aquí
+        const char* email = param1;
+        const char* password = param2;
+        const char* username = param3;
+        if (db_register_user(db, email, password, username) == 1) {
             const char* response = "Registration successful";
             send(communication_socket, response, strlen(response), 0);
         } else {
             const char* response = "Registration failed";
             send(communication_socket, response, strlen(response), 0);
         }
+    } else if (strcmp(command, "GAMESTART") == 0) {
+        add_to_matchmaking_queue(client_id);
+    } else if (strcmp(command, "GAMEFINISH") == 0) {
+        remove_from_matchmaking_queue(client_id);
+        auto it = find_if(pairs.begin(), pairs.end(), [client_id](const pair<int, int>& p) {
+            return p.first == client_id || p.second == client_id;
+        });
+
+        if (it != pairs.end()) {
+            int enemy_id = (it->first == client_id) ? it->second : it->first;
+            pairs.erase(it);
+            
+            if (clients.find(enemy_id) != clients.end()) {
+                const char* message = "ENEMY_DISCONNECTED";
+                send(clients[enemy_id], message, strlen(message), 0);
+            }
+        }
+    } else if (strcmp(command, "GAME_UPDATE") == 0) {
+        if (param1 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        char* matrix = param1;
+        string message = "UPDATE|" + to_string(client_id) + "|" + string(matrix);
+        forward_to_enemy(client_id, message);
     } else {
         const char* response = "Unknown command";
         send(communication_socket, response, strlen(response), 0);
@@ -76,7 +169,7 @@ void process_request(char* request, SOCKET communication_socket) {
     }
 }
 
-void client_handler(SOCKET communication_socket) {
+void client_handler(SOCKET communication_socket, int client_id) {
     char receive_buffer[512] = {0};
 
     while (true) {
@@ -90,7 +183,23 @@ void client_handler(SOCKET communication_socket) {
         }
 
         receive_buffer[bytes_received] = '\0';
-        process_request(receive_buffer, communication_socket);
+        process_request(receive_buffer, communication_socket, client_id);
+    }
+
+    lock_guard<mutex> guard(clients_mutex);
+
+    clients.erase(client_id);
+    auto it = find_if(pairs.begin(), pairs.end(), [client_id](const pair<int, int>& p) {
+        return p.first == client_id || p.second == client_id;
+    });
+
+    if (it != pairs.end()) {
+        int enemy_id = (it->first == client_id) ? it->second : it->first;
+        pairs.erase(it);
+
+        if (clients.find(enemy_id) != clients.end()) {
+            pairs.push_back({enemy_id, -1});
+        }
     }
 
     closesocket(communication_socket);
@@ -167,7 +276,11 @@ int main() {
     while ((communication_socket = accept(connection_socket, (struct sockaddr*)&client_address, &client_size)) != INVALID_SOCKET) {
         log("Connection accepted.", "INFO");
 
-        thread client_thread(client_handler, communication_socket);
+        lock_guard<mutex> guard(clients_mutex);
+        int client_id = static_cast<int>(communication_socket); 
+        clients[client_id] = communication_socket;
+
+        thread client_thread(client_handler, communication_socket, client_id);
         client_thread.detach();
     }
 
