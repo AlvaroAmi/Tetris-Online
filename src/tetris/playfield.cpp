@@ -18,8 +18,9 @@ bool Playfield::isLineFull(int line) const {
 }
 
 void Playfield::clearLine(int line) {
-    memcpy(matrix[line], matrix[line + 1], sizeof(matrix[line]) * (PLAYFIELD_HEIGHT - line - 1));
-    memset(matrix[PLAYFIELD_HEIGHT - 1], 0, sizeof(matrix[PLAYFIELD_WIDTH]) * line);
+    int offsetLines = PLAYFIELD_HEIGHT - line - 1;
+    memcpy(matrix[line], matrix[line + 1], sizeof(Color) * PLAYFIELD_WIDTH * offsetLines);
+    memset(matrix[PLAYFIELD_HEIGHT - 1], 0, sizeof(Color) * PLAYFIELD_WIDTH);
 }
 
 int Playfield::attemptClearLines() {
