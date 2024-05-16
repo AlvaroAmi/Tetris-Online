@@ -42,6 +42,7 @@ private:
     unsigned short rotation;
 
 public:
+    Tetromino() = default;
     Tetromino(TetrominoType type, Vector2<int> position);
     Tetromino(TetrominoType type, Vector2<int> position, unsigned short rotation);
 

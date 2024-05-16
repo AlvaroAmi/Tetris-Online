@@ -27,8 +27,6 @@ public:
     bool tetrominoFits(const Tetromino &tetromino) const;
 
     void lockTetromino(const Tetromino &tetromino);
-
-    Color (*getMatrix())[PLAYFIELD_WIDTH];
 };
 
 #endif

@@ -59,7 +59,3 @@ void Playfield::lockTetromino(const Tetromino &tetromino) {
         setTile(block.getX(), block.getY(), tetromino.getColor());
     }
 }
-
-Color (*Playfield::getMatrix())[PLAYFIELD_WIDTH] {
-    return matrix;
-}
