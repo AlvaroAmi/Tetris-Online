@@ -179,8 +179,9 @@ int contains_at_symbol(const char *email) {
 void print_logged_in_menu() {
     system("cls");
     print_tetris_logo(); 
-    printf("1. Jugar\n");
-    printf("2. Cerrar Sesion\n");
+    printf("1. Jugar online\n");
+    printf("2. Jugar offline\n");
+    printf("3. Cerrar Sesion\n");
     printf("*Pulsa 'q' para salir\n");
 }
 
@@ -233,10 +234,14 @@ void display_menu(SOCKET sock) {
                     start_game(sock);
                     break;
                 case 2:
+                    //Initialize offline game
+                    break;
+                case 3:
                     isLoggedIn = 0; 
                     stop_listener_thread();
                     finish_game(sock);
                     break;
+
             }
         }
     } while (1);
