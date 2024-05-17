@@ -46,6 +46,12 @@ bool open_database(const char* db_path) {
 
 void add_to_matchmaking_queue(int client_id) {
     lock_guard<mutex> guard(clients_mutex);
+
+    if (find(matchmaking_queue.begin(), matchmaking_queue.end(), client_id) != matchmaking_queue.end()) {
+        log("Client " + to_string(client_id) + " is already in the matchmaking queue", "INFO");
+        return;
+    }
+
     matchmaking_queue.push_back(client_id);
     log("Client " + to_string(client_id) + " added to matchmaking queue", "INFO");
 
@@ -64,6 +70,7 @@ void add_to_matchmaking_queue(int client_id) {
         send(clients[client2], message.c_str(), message.length(), 0);
     }
 }
+
 
 void remove_from_matchmaking_queue(int client_id) {
     lock_guard<mutex> guard(clients_mutex);
