@@ -13,7 +13,7 @@ extern int has_special_char(const char *str);
 extern int contains_at_symbol(const char *email);
 extern void start_listener_thread(SOCKET sock);
 extern void stop_listener_thread();
-extern void send_game_start(SOCKET sock);
+extern void send_game_start(SOCKET sock, int user_id);
 extern void send_game_finish(SOCKET sock);
 
 int isLoggedIn = 0;
@@ -131,7 +131,7 @@ void register_user(SOCKET sock) {
 }
 
 void start_game(SOCKET sock) {
-    send_game_start(sock);
+    send_game_start(sock,1); //TODO: GET USER ID FROM DB AFTER LOGING
     // Add game logic here
 }
 

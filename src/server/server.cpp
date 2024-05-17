@@ -22,10 +22,12 @@ using namespace std;
 sqlite3* db;
 ofstream logFile;
 
-mutex clients_mutex; 
+mutex clients_mutex;
 map<int, SOCKET> clients; 
 vector<int> matchmaking_queue; 
 vector<pair<int, int>> pairs; 
+map<int, int> user_to_socket; 
+map<int, int> socket_to_user;
 
 void log(const string& message, const string& level) {
     time_t now = time(0);
@@ -71,7 +73,6 @@ void add_to_matchmaking_queue(int client_id) {
     }
 }
 
-
 void remove_from_matchmaking_queue(int client_id) {
     lock_guard<mutex> guard(clients_mutex);
     matchmaking_queue.erase(remove(matchmaking_queue.begin(), matchmaking_queue.end(), client_id), matchmaking_queue.end());
@@ -94,6 +95,20 @@ void forward_to_enemy(int client_id, const string& message) {
             send(enemy_socket, message.c_str(), message.length(), 0);
         }
     }
+}
+
+void update_user_socket_mapping(int client_id, int user_id) {
+    lock_guard<mutex> guard(clients_mutex);
+
+    if (socket_to_user.find(client_id) != socket_to_user.end()) {
+        int old_user_id = socket_to_user[client_id];
+        user_to_socket.erase(old_user_id);
+    }
+
+    socket_to_user[client_id] = user_id;
+    user_to_socket[user_id] = client_id;
+
+    log("Updated user-socket mapping: User " + to_string(user_id) + " -> Socket " + to_string(client_id), "INFO");
 }
 
 void process_request(char* request, SOCKET communication_socket, int client_id) {
@@ -143,7 +158,15 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
             send(communication_socket, response, strlen(response), 0);
         }
     } else if (strcmp(command, "GAMESTART") == 0) {
-        add_to_matchmaking_queue(client_id);
+        if (param1 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        int user_id = stoi(param1);
+        update_user_socket_mapping(client_id, user_id);
+        add_to_matchmaking_queue(user_id);
     } else if (strcmp(command, "GAMEFINISH") == 0) {
         remove_from_matchmaking_queue(client_id);
         auto it = find_if(pairs.begin(), pairs.end(), [client_id](const pair<int, int>& p) {
@@ -153,7 +176,7 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
         if (it != pairs.end()) {
             int enemy_id = (it->first == client_id) ? it->second : it->first;
             pairs.erase(it);
-            
+
             if (clients.find(enemy_id) != clients.end()) {
                 const char* message = "ENEMY_DISCONNECTED";
                 send(clients[enemy_id], message, strlen(message), 0);
@@ -207,6 +230,12 @@ void client_handler(SOCKET communication_socket, int client_id) {
         if (clients.find(enemy_id) != clients.end()) {
             pairs.push_back({enemy_id, -1});
         }
+    }
+
+    if (socket_to_user.find(client_id) != socket_to_user.end()) {
+        int user_id = socket_to_user[client_id];
+        socket_to_user.erase(client_id);
+        user_to_socket.erase(user_id);
     }
 
     closesocket(communication_socket);

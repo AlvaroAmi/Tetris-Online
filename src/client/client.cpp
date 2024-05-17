@@ -161,13 +161,14 @@ void send_game_update(SOCKET sock, const string& matrix) {
     }
 }
 
-void send_game_start(SOCKET sock) {
-    string message = "GAMESTART";
+void send_game_start(SOCKET sock, int user_id) {
+    string message = "GAMESTART|" + to_string(user_id);
     if (send(sock, message.c_str(), message.length(), 0) < 0) {
         std::cerr << "Send GAMESTART failed: " << WSAGetLastError() << std::endl;
         log("Send GAMESTART failed: " + to_string(WSAGetLastError()), "ERROR");
     }
 }
+
 
 void send_game_finish(SOCKET sock) {
     string message = "GAMEFINISH";
