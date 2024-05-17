@@ -104,7 +104,6 @@ SingleplayerTetrisGame::SingleplayerTetrisGame() : playfield() {
         mvwprintw(lines_win, 1, 5, "LINES: \t\t\t %d", totalLinesCleared);
 
         Vector2<int> *nextTetrominoBlocks = TETROMINOS[nextTetrominoType][0];
-        wattron(next_display_win, A_REVERSE);
         wattron(next_display_win, COLOR_PAIR(nextTetrominoType + 1));
         for (int i = 0; i < BLOCKS_PER_TETROMINO; i++) {
             Vector2<int> block = nextTetrominoBlocks[i];
@@ -113,7 +112,6 @@ SingleplayerTetrisGame::SingleplayerTetrisGame() : playfield() {
             mvwaddstr(next_display_win, (block.getY() + 1) * 2 + 1, block.getX() * 4 + 3, "    ");
         }
         wattroff(next_display_win, COLOR_PAIR(nextTetrominoType + 1));
-        wattroff(next_display_win, A_REVERSE);
 
         wrefresh(score_win);
         wrefresh(level_win);
@@ -144,21 +142,21 @@ void SingleplayerTetrisGame::init_colors(void) {
         init_color(CUSTOM_CYAN, 0, 737, 831);
         init_color(CUSTOM_ORANGE, 1000, 596, 0);
 
-        init_pair(Color::CYAN, CUSTOM_CYAN, COLOR_BLACK);
-        init_pair(Color::BLUE, CUSTOM_BLUE, COLOR_BLACK);
-        init_pair(Color::ORANGE, CUSTOM_ORANGE, COLOR_BLACK);
-        init_pair(Color::YELLOW, CUSTOM_YELLOW, COLOR_BLACK);
-        init_pair(Color::GREEN, CUSTOM_GREEN, COLOR_BLACK);
-        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(Color::RED, CUSTOM_RED, COLOR_BLACK);
+        init_pair(Color::CYAN, COLOR_BLACK, CUSTOM_CYAN);
+        init_pair(Color::BLUE, COLOR_BLACK, CUSTOM_BLUE);
+        init_pair(Color::ORANGE, COLOR_BLACK, CUSTOM_ORANGE);
+        init_pair(Color::YELLOW, COLOR_BLACK, CUSTOM_YELLOW);
+        init_pair(Color::GREEN, COLOR_BLACK, CUSTOM_GREEN);
+        init_pair(Color::PURPLE, COLOR_BLACK, COLOR_MAGENTA);
+        init_pair(Color::RED, COLOR_BLACK, CUSTOM_RED);
     } else {
-        init_pair(Color::CYAN, COLOR_CYAN, COLOR_BLACK);
-        init_pair(Color::BLUE, COLOR_BLUE, COLOR_BLACK);
-        init_pair(Color::ORANGE, COLOR_WHITE, COLOR_BLACK);
-        init_pair(Color::YELLOW, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(Color::GREEN, COLOR_GREEN, COLOR_BLACK);
-        init_pair(Color::PURPLE, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(Color::RED, COLOR_RED, COLOR_BLACK);
+        init_pair(Color::CYAN, COLOR_BLACK, COLOR_CYAN);
+        init_pair(Color::BLUE, COLOR_BLACK, COLOR_BLUE);
+        init_pair(Color::ORANGE, COLOR_BLACK, COLOR_WHITE);
+        init_pair(Color::YELLOW, COLOR_BLACK, COLOR_YELLOW);
+        init_pair(Color::GREEN, COLOR_BLACK, COLOR_GREEN);
+        init_pair(Color::PURPLE, COLOR_BLACK, COLOR_MAGENTA);
+        init_pair(Color::RED, COLOR_BLACK, COLOR_RED);
     }
 }
 

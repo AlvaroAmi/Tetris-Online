@@ -38,7 +38,6 @@ Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const
 
 void PlayfieldRenderer::renderPlayfield(const Tetromino &currentTetromino) {
     Color(*matrix)[PLAYFIELD_WIDTH] = getRenderableMatrix(playfield, currentTetromino);
-    wattron(window, A_REVERSE);
 
     for (int row = VISIBLE_PLAYFIELD_HEIGHT - 1; row >= 0; row--) {
         for (int column = 0; column < PLAYFIELD_WIDTH; column++) {
@@ -59,7 +58,6 @@ void PlayfieldRenderer::renderPlayfield(const Tetromino &currentTetromino) {
             }
         }
     }
-    wattroff(window, A_REVERSE);
     wrefresh(window);
 }
 
