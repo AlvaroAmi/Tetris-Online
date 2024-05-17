@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "sqlite3.h"
 
 void select_data(sqlite3 *db, char *query);
@@ -28,6 +30,15 @@ int main() {
     // Select and display data from Singleplayer_Game
     char *select_singleplayer_games = "SELECT * FROM Singleplayer_Game;";
     select_data(db, select_singleplayer_games);
+
+    // Obtén el nombre de usuario
+    char *username = get_username(db, 1);
+    if (username) {
+        printf("Username: %s\n", username);
+        free(username);  // Libera la memoria asignada
+    } else {
+        printf("User not found or error occurred.\n");
+    }
 
     // Close the database
     sqlite3_close(db);

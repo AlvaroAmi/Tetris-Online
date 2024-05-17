@@ -121,3 +121,57 @@ int delete_user(sqlite3* db, const char* email) {
     sqlite3_finalize(stmt);
     return result == SQLITE_DONE;
 }
+
+char* get_username(sqlite3* db, int user_id) {
+    sqlite3_stmt* stmt;
+    const char* sql = "SELECT username FROM USER WHERE  id = ?;";
+    int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Error preparing get username statement: %s\n", sqlite3_errmsg(db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, user_id);
+
+    result = sqlite3_step(stmt);
+
+    if (result != SQLITE_ROW) {
+        sqlite3_finalize(stmt);
+        return NULL;
+    }
+
+    const char* username = (const char*)sqlite3_column_text(stmt, 0);
+    char* usernameCopy = (char*)malloc(strlen(username) + 1);
+    strcpy(usernameCopy, username);
+
+    sqlite3_finalize(stmt);
+    return usernameCopy;
+}
+
+int main() {
+    sqlite3 *db;
+    int rc;
+
+    // Abre la base de datos
+    rc = sqlite3_open("database.db", &db);
+    if (rc) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+        return (1);
+    } else {
+        fprintf(stderr, "Opened database successfully\n");
+    }
+
+    // Obtén el nombre de usuario
+    char *username = get_username(db, 1);
+    if (username) {
+        printf("Username: %s\n", username);
+        free(username);  // Libera la memoria asignada
+    } else {
+        printf("User not found or error occurred.\n");
+    }
+
+    // Cierra la base de datos
+    sqlite3_close(db);
+    return 0;
+}
