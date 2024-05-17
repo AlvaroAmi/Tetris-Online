@@ -28,6 +28,16 @@ gcc -o bin/tetris-online src/database/database.c src/files/*.c src/menus/*.c src
 ```
 
 
+### Compile the singleplayer game
+```
+g++ -o ./bin/tetris ./tests/test_tetris_singleplayer.cpp ./src/tetris/*.cpp -I ./include -lncurses
+```
+
+#### Execute the game
+```
+./bin/tetris
+```
+
 ##### Test config file parser
 ```
 gcc -o bin/test_config_file_parser src/files/config_file_parser.c tests/test_config_file_parser.c -I include
