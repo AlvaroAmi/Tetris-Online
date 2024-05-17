@@ -10,6 +10,12 @@ gcc -o ./bin/main $(find ./src -type f -name "*.c" ! -name "create_database.c") 
 ```
 #### On Windows:
 ```
+
+gcc -o bin/create_database src/database/create_database.c lib/sqlite-amalgamation-3080704/sqlite3.c -Ilib/sqlite-amalgamation-3080704 -Ilib  -lpthread
+
+gcc -o bin/query_database tests/query_database.c lib/sqlite-amalgamation-3080704/sqlite3.c -Ilib/sqlite-amalgamation-3080704 -Ilib  -lpthread
+
+
 gcc -c src/files/*.c src/menus/*.c src/main.c lib/sqlite-amalgamation-3080704/sqlite3.c -Iinclude -Ilib/sqlite-amalgamation-3080704
 g++ -c src/database/database.c -Iinclude -o database.o
 
