@@ -34,8 +34,6 @@ class SingleplayerTetrisGame : TetrisGame {
     TetrominoType nextTetrominoType; // Buffered tetromino type that appears in the "next" window
     BagRandomGenerator bagRandomGenerator;
 
-    // Windows
-    WINDOW *outer_win;
     PlayfieldRenderer playfieldRenderer;
 
     bool gameIsOver = false;
