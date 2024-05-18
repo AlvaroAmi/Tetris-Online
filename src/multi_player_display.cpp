@@ -27,8 +27,8 @@ int main(/*const char* player1_username, const char* player2_username*/) {
     WINDOW *player2_username_win;
     WINDOW *player1_display_win;
     WINDOW *player2_display_win;
-    WINDOW *player1_score_win;
-    WINDOW *player2_score_win;
+    WINDOW *player1_garbage_win;
+    WINDOW *player2_garbage_win;
     WINDOW *player1_next_win;
     WINDOW *player2_next_win;
     WINDOW *player1_next_display_win;
@@ -58,14 +58,14 @@ int main(/*const char* player1_username, const char* player2_username*/) {
     player2_username_win = newwin(3, 42, 2, 134);
 
     // Data windows: Score Counter for each player
-    player1_score_win = newwin(3, 35, 26, 51);
-    player2_score_win = newwin(3, 35, 26, 93);
+    player1_garbage_win = newwin(3, 35, 26, 51);
+    player2_garbage_win = newwin(3, 35, 26, 93);
 
-    player1_next_win = newwin(13, 46, 34, 51);
-    player2_next_win = newwin(13, 40, 34, 93);
+    player1_next_win = newwin(15, 46, 32, 51);
+    player2_next_win = newwin(15, 40, 32, 93);
 
-    player1_next_display_win = newwin(8, 16, 36, 61);
-    player2_next_display_win = newwin(8, 16, 36, 103);
+    player1_next_display_win = newwin(12, 24, 34, 57);
+    player2_next_display_win = newwin(12, 24, 34, 99);
 
     refresh();
 
@@ -80,32 +80,32 @@ int main(/*const char* player1_username, const char* player2_username*/) {
                                "  \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\  \n"
                                "  //////////////////////////////////////////////////////  \n");
 
-    wattron(player1_score_win, A_BOLD);
-    wattron(player2_score_win, A_BOLD);
+    wattron(player1_garbage_win, A_BOLD);
+    wattron(player2_garbage_win, A_BOLD);
 
     mvwprintw(player1_username_win, 1, 1, "\t      PLAYER 1 USERNAME");
     mvwprintw(player2_username_win, 1, 1, "\t      PLAYER 2 USERNAME");
 
-    mvwprintw(player1_score_win, 1, 5, "SCORE: \t         100000");
-    mvwprintw(player2_score_win, 1, 5, "SCORE: \t         100000");
+    mvwprintw(player1_garbage_win, 1, 5, "SENT GARBAGE: \t         100000");
+    mvwprintw(player2_garbage_win, 1, 5, "SENT GARBAGE: \t         100000");
 
     mvwprintw(player1_next_win, 0, 0, " //////////////////////////////////  \n"
-                              "           NEXT TETROMINO:                           \n");
-    mvwprintw(player1_next_win, 12, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+                              "       NEXT TETROMINO:                           \n");
+    mvwprintw(player1_next_win, 14, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
 
     mvwprintw(player2_next_win, 0, 0, " //////////////////////////////////  \n"
-                              "           NEXT TETROMINO:                           \n");
-    mvwprintw(player2_next_win, 12, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+                              "       NEXT TETROMINO:                           \n");
+    mvwprintw(player2_next_win, 14, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
 
     box(outer_win, 0, 0);
     box(player1_display_win, 0, 0);
     box(player1_username_win, 0, 0);
-    box(player1_score_win, 0, 0);
+    box(player1_garbage_win, 0, 0);
     box(player1_next_display_win, 0, 0);
 
     box(player2_display_win, 0, 0);
     box(player2_username_win, 0, 0);
-    box(player2_score_win, 0, 0);
+    box(player2_garbage_win, 0, 0);
     box(player2_next_display_win, 0, 0);
     
     wborder(player1_username_win, ' ', ' ', '*', '*', '*', '*', '*', '*');
@@ -116,13 +116,13 @@ int main(/*const char* player1_username, const char* player2_username*/) {
 
     wrefresh(player1_username_win);
     wrefresh(player1_display_win);
-    wrefresh(player1_score_win);
+    wrefresh(player1_garbage_win);
     wrefresh(player1_next_win);
     wrefresh(player1_next_display_win);
 
     wrefresh(player2_username_win);
     wrefresh(player2_display_win);
-    wrefresh(player2_score_win);
+    wrefresh(player2_garbage_win);
     wrefresh(player2_next_win);
     wrefresh(player2_next_display_win);
     

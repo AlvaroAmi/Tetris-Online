@@ -17,4 +17,5 @@ using namespace std;
 
 void init_colors(void);
 int paint_matrix(WINDOW *win, int (*matrix)[10]);
+int paint_next_tetromino(WINDOW *win, TetrominoType tt);
 #endif

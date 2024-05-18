@@ -134,7 +134,7 @@ int single_player() {
     wrefresh(next_display_win);
 
     paint_matrix(display_win, matrix);
-
+    
     getch();
 
     endwin();
@@ -209,5 +209,79 @@ int paint_matrix(WINDOW *win, int (*matrix)[10]) {
 }
 
 int paint_next_tetromino(WINDOW *win, TetrominoType tt) {
+    const int (*matrix)[5];
+    const int I[5][5] = {{0,0,0,0,0}, {0,0,0,0,0}, {1,1,1,1,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int J[5][5] = {{0,0,0,0,0}, {0,0,0,2,0}, {0,2,2,2,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int L[5][5] = {{0,0,0,0,0}, {0,3,0,0,0}, {0,3,3,3,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int O[5][5] = {{0,4,4,0,0}, {0,4,4,0,0}, {0,0,0,0,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int S[5][5] = {{0,0,5,5,0}, {0,5,5,0,0}, {0,0,0,0,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int Z[5][5] = {{0,7,7,0,0}, {0,0,7,7,0}, {0,0,0,0,0}, {0,0,0,0,0}, {0,0,0,0,0}};
+    const int T[5][5] = {{0,6,6,6,0}, {0,0,6,0,0}, {0,0,0,0,0}, {0,0,0,0,0}, {0,0,0,0,0}};
 
+    int x_centering_coefficient, y_centering_coefficient = 0;
+           
+    start_color();
+    init_colors();
+    wattron(win, A_REVERSE);
+        
+    switch (tt) {
+        case TetrominoType::I: 
+            matrix = I; 
+            x_centering_coefficient = 3;
+            break;
+        case TetrominoType::J: 
+            matrix = J; 
+            x_centering_coefficient = 1; 
+            y_centering_coefficient = 1;
+            break;
+        case TetrominoType::L:
+            matrix = L;
+            x_centering_coefficient = 1; 
+            y_centering_coefficient = 1;
+            break;
+        case TetrominoType::O:
+            matrix = O;
+            x_centering_coefficient = 3; 
+            y_centering_coefficient = 3;
+            break;
+        case TetrominoType::S:
+            matrix = S;
+            x_centering_coefficient = 1;
+            y_centering_coefficient = 3;
+            break;
+        case TetrominoType::Z:
+            matrix = Z;
+            x_centering_coefficient = 1;
+            y_centering_coefficient = 3;
+            break;
+        case TetrominoType::T:
+            matrix = T;
+            x_centering_coefficient = 1;
+            y_centering_coefficient = 3;
+            break;
+        default:
+            return 1;
+    }
+
+    int row, column;
+    for (row = 0; row < 5; row++) {
+        for (column = 0; column < 5; column++) {
+            int value = matrix[row][column];
+            int x_coordinate = x_centering_coefficient + 1 + column * 4;
+            int y_coordinate = y_centering_coefficient + 1 + row * 2;
+
+            if (value == 0) {value = 9;}
+            wattron(win, COLOR_PAIR(value));
+            mvwaddstr(win, y_coordinate, x_coordinate, "    ");
+            mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
+            wattroff(win, COLOR_PAIR(value));
+
+            wrefresh(win);
+        }
+    }
+    wattroff(win, A_REVERSE);
+    box(win, 0, 0);
+    wrefresh(win);
+    
+    return 0;
 }
