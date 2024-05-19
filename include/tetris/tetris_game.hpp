@@ -4,6 +4,7 @@
 #include "tetris/bag_random_generator.hpp"
 #include "tetris/playfield.hpp"
 #include "tetris/vector2.hpp"
+#include <chrono>
 
 #define MAX_DEFINED_LEVEL 29
 
@@ -20,9 +21,13 @@ protected:
     TetrominoType nextTetrominoType; // Buffered tetromino type that appears in the "next" window
     BagRandomGenerator bagRandomGenerator;
 
+    std::chrono::time_point<std::chrono::system_clock> startTime;
+    std::chrono::time_point<std::chrono::system_clock> endTime;
+
     bool gameIsOver = false;
     int ticksTillGravity; // NOTE: Initialize this in the constructor of the derived class to the base gravity value
 
+    TetrisGame();
     void spawnTetromino();
 
     void tryMove(Vector2<int> direction);

@@ -13,6 +13,10 @@
 #error "Unsupported operating system"
 #endif
 
+TetrisGame::TetrisGame(){
+    startTime = std::chrono::system_clock::now();
+}
+
 void TetrisGame::updateGame() {
     switch (getch()) {
     case KEY_LEFT:
