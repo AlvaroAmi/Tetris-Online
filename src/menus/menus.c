@@ -134,7 +134,31 @@ void register_user(SOCKET sock) {
 
 void start_game(SOCKET sock) {
     send_game_start(sock, userID);
-    // Add game logic here
+
+    char buffer[512];
+    int bytes_received;
+
+    printf("Buscando un oponente...\n");
+    while (1) {
+        bytes_received = recv(sock, buffer, sizeof(buffer) - 1, 0);
+        if (bytes_received == SOCKET_ERROR) {
+            printf("Error receiving server data: %d\n", WSAGetLastError());
+            return;
+        } else if (bytes_received == 0) {
+            printf("Server closed the conection.\n");
+            return;
+        }
+
+        buffer[bytes_received] = '\0'; 
+        printf("Mensaje recibido del servidor: %s\n", buffer);
+
+        if (strncmp(buffer, "MATCHED|", 8) == 0) {
+            printf("Emparejado con otro jugador!\n");
+            //AÑADIR LOGICA DE INICIO DE JUEGO
+            break; 
+        }
+    }
+
 }
 
 void finish_game(SOCKET sock) {
@@ -236,7 +260,6 @@ void display_menu(SOCKET sock) {
                 start_game(sock);
                 break;
             case 2:
-                // Initialize offline game
                 create_singleplayer_tetris_game();
                 break;
             case 3:

@@ -99,11 +99,17 @@ int receive_response(SOCKET sock) {
 
     server_reply[recv_size] = '\0';
 
-    std::cout << "Server reply: " << server_reply << std::endl;
     log("Server reply: " + std::string(server_reply), "INFO");
 
     try {
         int result = std::stoi(server_reply);
+
+        if (result == 0) {
+            std::cout << "Operacion fallida, intentalo de nuevo." << std::endl;
+        } else if (result > 0) {
+            std::cout << "Operacion exitosa" << std::endl;
+        }
+
         return result;
     } catch (const std::invalid_argument &e) {
         log("Invalid response received, not a number: " + std::string(server_reply), "ERROR");
