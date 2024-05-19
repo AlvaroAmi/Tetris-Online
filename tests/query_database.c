@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "sqlite3.h"
+#include "database.h"
 
 void select_data(sqlite3 *db, char *query);
 
@@ -13,10 +14,59 @@ int main() {
     int rc = sqlite3_open("DataBase.db", &db);
 
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "No se puede abrir la base de datos: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
         return 1;
     } else {
-        fprintf(stdout, "Base de datos abierta exitosamente\n");
+        fprintf(stdout, "Database opened successfully\n");
+    }
+
+    // Test user registration
+    if (db_register_user(db, "testuser@example.com", "password123", "testuser")) {
+        printf("User registered successfully.\n");
+    } else {
+        printf("Failed to register user.\n");
+    }
+
+    // Test user authentication
+    int user_id = authenticate_user(db, "testuser@example.com", "password123");
+    if (user_id > 0) {
+        printf("User authenticated successfully. User ID: %d\n", user_id);
+    } else {
+        printf("Failed to authenticate user.\n");
+    }
+
+    // Test getting username
+    char *username = get_username(db, user_id);
+    if (username) {
+        printf("Username: %s\n", username);
+        free(username);  // Free the allocated memory
+    } else {
+        printf("User not found or error occurred.\n");
+    }
+
+
+    // Test calculating game duration
+    char *multiplayer_duration = calculate_game_duration(db, 1, 1);
+    if (multiplayer_duration) {
+        printf("Multiplayer game duration: %s\n", multiplayer_duration);
+        free(multiplayer_duration);
+    } else {
+        printf("Failed to calculate multiplayer game duration.\n");
+    }
+
+    char *singleplayer_duration = calculate_game_duration(db, 1, 0);
+    if (singleplayer_duration) {
+        printf("Singleplayer game duration: %s\n", singleplayer_duration);
+        free(singleplayer_duration);
+    } else {
+        printf("Failed to calculate singleplayer game duration.\n");
+    }
+
+    // Test user deletion
+    if (delete_user(db, "testuser@example.com")) {
+        printf("User deleted successfully.\n");
+    } else {
+        printf("Failed to delete user.\n");
     }
 
     // Select and display data from User
@@ -31,15 +81,6 @@ int main() {
     char *select_singleplayer_games = "SELECT * FROM Singleplayer_Game;";
     select_data(db, select_singleplayer_games);
 
-    // Obtén el nombre de usuario
-    char *username = get_username(db, 1);
-    if (username) {
-        printf("Username: %s\n", username);
-        free(username);  // Libera la memoria asignada
-    } else {
-        printf("User not found or error occurred.\n");
-    }
-
     // Close the database
     sqlite3_close(db);
 
@@ -51,7 +92,7 @@ void select_data(sqlite3 *db, char *query) {
     int rc = sqlite3_prepare_v2(db, query, -1, &stmt, 0);
 
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Error preparando la consulta SQL: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Error preparing SQL statement: %s\n", sqlite3_errmsg(db));
         return;
     }
 
@@ -68,10 +109,10 @@ void select_data(sqlite3 *db, char *query) {
             }
             printf("\n");
         } else if (result == SQLITE_DONE) {
-            printf("Seleccion completada\n");
+            printf("Selection completed\n");
             break;
         } else {
-            printf("Error ejecutando la consulta SQL: %s\n", sqlite3_errmsg(db));
+            printf("Error executing SQL statement: %s\n", sqlite3_errmsg(db));
             break;
         }
     }
