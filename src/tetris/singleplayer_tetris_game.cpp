@@ -25,11 +25,13 @@ SingleplayerTetrisGame::SingleplayerTetrisGame() : renderer(*this) {
     }
 
     endwin();
+    delete this;
 }
 
 void SingleplayerTetrisGame::gameOver() {
     gameIsOver = true;
-    std::cout << "Game Over!" << std::endl;
+    // TODO: Implement game over screen
+    // TODO: Save data to server
 }
 
 unsigned int SingleplayerTetrisGame::getLevel() const {

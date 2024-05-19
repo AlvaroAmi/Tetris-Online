@@ -60,3 +60,14 @@ void Playfield::lockTetromino(const Tetromino &tetromino) {
         setTile(block.getX(), block.getY(), tetromino.getColor());
     }
 }
+
+/* void Playfield::addGarbage(int lines) {
+    for (int i = 0; i < lines; i++) {
+        for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
+            for (int y = PLAYFIELD_HEIGHT - 1; y > 0; y--) {
+                setTile(x, y, getTile(x, y - 1));
+            }
+            setTile(x, 0, 8);
+        }
+    }
+} */

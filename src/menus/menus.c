@@ -1,12 +1,13 @@
-#include <stdio.h>
-#include <winsock2.h>
-#include <string.h>
-#include <ctype.h>
 #include "menus.h"
-#include "database.h"
 #include "client.hpp"
+#include "database.h"
+#include "tetris/tetris_c_api.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include <winsock2.h>
 
-extern void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
+extern void send_request(SOCKET sock, const char *command, const char *email, const char *password, const char *username);
 extern int receive_response(SOCKET sock);
 extern void clear_screen();
 extern int has_uppercase(const char *str);
@@ -22,46 +23,46 @@ int userID = 0;
 //////////////////////////////////////ASTHETICS///////////////////////////////////////
 
 void print_tetris_logo() {
-  printf("  _____ _____ _____ ____  ___ ____  \n");
-  printf(" |_   _| ____|_   _|  _ \\|_ _/ ___| \n");
-  printf("   | | |  _|   | | | |_) || |\\___ \\ \n");
-  printf("   | | | |___  | | |  _ < | | ___) |\n");
-  printf("   |_| |_____| |_| |_| \\_\\___|____/ \n");
-  printf("   ___  _   _ _     ___ _   _ _____ \n");
-  printf("  / _ \\| \\ | | |   |_ _| \\ | | ____|\n");
-  printf(" | | | |  \\| | |    | ||  \\| |  _|  \n");
-  printf(" | |_| | |\\  | |___ | || |\\  | |___ \n");
-  printf("  \\___/|_| \\_|_____|___|_| \\_|_____|\n");
-  printf("                                    \n");
-  printf("\n");
+    printf("  _____ _____ _____ ____  ___ ____  \n");
+    printf(" |_   _| ____|_   _|  _ \\|_ _/ ___| \n");
+    printf("   | | |  _|   | | | |_) || |\\___ \\ \n");
+    printf("   | | | |___  | | |  _ < | | ___) |\n");
+    printf("   |_| |_____| |_| |_| \\_\\___|____/ \n");
+    printf("   ___  _   _ _     ___ _   _ _____ \n");
+    printf("  / _ \\| \\ | | |   |_ _| \\ | | ____|\n");
+    printf(" | | | |  \\| | |    | ||  \\| |  _|  \n");
+    printf(" | |_| | |\\  | |___ | || |\\  | |___ \n");
+    printf("  \\___/|_| \\_|_____|___|_| \\_|_____|\n");
+    printf("                                    \n");
+    printf("\n");
 }
 
 void print_login() {
-  printf("   ____     _     _                    _         \n");
-  printf("  /  _/__  (_)___(_)__    ___ ___ ___ (_)__  ___ \n");
-  printf(" _/ // _ \\/ / __/ / _ \\  (_-</ -_|_-</ / _ \\/ _ \\\n");
-  printf("/___/_//_/_/\\__/_/\\___/ /___/\\__/___/_/\\___/_//_/\n");
-  printf("                                                 \n");
-  printf("\n");
+    printf("   ____     _     _                    _         \n");
+    printf("  /  _/__  (_)___(_)__    ___ ___ ___ (_)__  ___ \n");
+    printf(" _/ // _ \\/ / __/ / _ \\  (_-</ -_|_-</ / _ \\/ _ \\\n");
+    printf("/___/_//_/_/\\__/_/\\___/ /___/\\__/___/_/\\___/_//_/\n");
+    printf("                                                 \n");
+    printf("\n");
 }
 
 void print_register() {
-  printf("   ___           _     __                      \n");
-  printf("  / _ \\___ ___ _(_)__ / /________ ________ ___ \n");
-  printf(" / , _/ -_) _ `/ (_-</ __/ __/ _ `/ __(_-</ -_)\n");
-  printf("/_/|_|\\__/\\_, /_/___/\\__/_/  \\_,_/_/ /___/\\__/ \n");
-  printf("         /___/                                 \n");
-  printf("\n");
+    printf("   ___           _     __                      \n");
+    printf("  / _ \\___ ___ _(_)__ / /________ ________ ___ \n");
+    printf(" / , _/ -_) _ `/ (_-</ __/ __/ _ `/ __(_-</ -_)\n");
+    printf("/_/|_|\\__/\\_, /_/___/\\__/_/  \\_,_/_/ /___/\\__/ \n");
+    printf("         /___/                                 \n");
+    printf("\n");
 }
 
 void print_play() {
-  printf("     __                  \n");
-  printf(" __ / /_ _____ ____ _____\n");
-  printf("/ // / // / _ `/ _ `/ __/\n");
-  printf("\\___/\\_,_/\\_, /\\_,_/_/   \n");
-  printf("         /___/           \n");
-  printf("\n");
-  printf("\n");
+    printf("     __                  \n");
+    printf(" __ / /_ _____ ____ _____\n");
+    printf("/ // / // / _ `/ _ `/ __/\n");
+    printf("\\___/\\_,_/\\_, /\\_,_/_/   \n");
+    printf("         /___/           \n");
+    printf("\n");
+    printf("\n");
 }
 ///////////////////////////////////COMMUNICATION METHODS///////////////////////////////////////
 
@@ -82,7 +83,7 @@ void login(SOCKET sock) {
     if (userID) {
         start_listener_thread(sock);
     }
-    
+
     system("pause");
 }
 
@@ -123,16 +124,16 @@ void register_user(SOCKET sock) {
             system("pause");
         } else {
             send_request(sock, "REGISTER", email, password, username);
-            registration_successful = receive_response(sock); 
+            registration_successful = receive_response(sock);
             system("pause");
-            break; 
+            break;
         }
 
     } while (!registration_successful);
 }
 
 void start_game(SOCKET sock) {
-    send_game_start(sock,userID); 
+    send_game_start(sock, userID);
     // Add game logic here
 }
 
@@ -144,42 +145,42 @@ void finish_game(SOCKET sock) {
 ///////////////////////////////////OTHER METHODS///////////////////////////////////////
 
 void clear_screen() {
-    #ifdef _WIN32
+#ifdef _WIN32
     system("cls");
-    #else
+#else
     system("clear");
-    #endif
+#endif
 }
 
 int has_uppercase(const char *str) {
-  while (*str) {
-    if (isupper((unsigned char)*str))
-      return 1;
-    str++;
-  }
-  return 0;
+    while (*str) {
+        if (isupper((unsigned char)*str))
+            return 1;
+        str++;
+    }
+    return 0;
 }
 
 int has_special_char(const char *str) {
-  const char *special_chars = "!@#$%%^&*()-_=+[]{};:'\",.<>/?\\|`~";
+    const char *special_chars = "!@#$%%^&*()-_=+[]{};:'\",.<>/?\\|`~";
 
-  while (*str) {
-    if (strchr(special_chars, *str))
-      return 1;
-    str++;
-  }
-  return 0;
+    while (*str) {
+        if (strchr(special_chars, *str))
+            return 1;
+        str++;
+    }
+    return 0;
 }
 
 int contains_at_symbol(const char *email) {
-  return strchr(email, '@') != NULL;
+    return strchr(email, '@') != NULL;
 }
 
 ///////////////////////////////////MENU DISPLAY///////////////////////////////////////
 
 void print_logged_in_menu() {
     system("cls");
-    print_tetris_logo(); 
+    print_tetris_logo();
     printf("1. Jugar online\n");
     printf("2. Jugar offline\n");
     printf("3. Cerrar Sesion\n");
@@ -210,12 +211,12 @@ void display_menu(SOCKET sock) {
 
             option = atoi(input);
             switch (option) {
-                case 1:
-                    login(sock);
-                    break;
-                case 2:
-                    register_user(sock);
-                    break;
+            case 1:
+                login(sock);
+                break;
+            case 2:
+                register_user(sock);
+                break;
             }
         } else {
             print_logged_in_menu();
@@ -231,18 +232,18 @@ void display_menu(SOCKET sock) {
 
             option = atoi(input);
             switch (option) {
-                case 1:
-                    start_game(sock);
-                    break;
-                case 2:
-                    //Initialize offline game
-                    break;
-                case 3:
-                    userID = 0; 
-                    stop_listener_thread();
-                    finish_game(sock);
-                    break;
-
+            case 1:
+                start_game(sock);
+                break;
+            case 2:
+                // Initialize offline game
+                create_singleplayer_tetris_game();
+                break;
+            case 3:
+                userID = 0;
+                stop_listener_thread();
+                finish_game(sock);
+                break;
             }
         }
     } while (1);
