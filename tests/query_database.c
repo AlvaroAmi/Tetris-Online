@@ -10,7 +10,7 @@ int main() {
     char *err_msg = 0;
 
     // Open DataBase
-    int rc = sqlite3_open("TetrisOnline.db", &db);
+    int rc = sqlite3_open("DataBase.db", &db);
 
     if (rc != SQLITE_OK) {
         fprintf(stderr, "No se puede abrir la base de datos: %s\n", sqlite3_errmsg(db));

@@ -261,7 +261,7 @@ int main() {
     string server_ip = ip_param ? ip_param->value.string : DEFAULT_SERVER_IP;
     int server_port = port_param ? port_param->value.integer : DEFAULT_SERVER_PORT;
 
-    if (!open_database("TetrisOnline.db")) {
+    if (!open_database("DataBase.db")) {
         logFile.close();
         return 1;
     }
