@@ -1,13 +1,14 @@
+#include "database.h"
+#include <pthread.h>
+#include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sqlite3.h>
-#include <pthread.h>
 #include <string.h>
-#include "database.h"
 
-int authenticate_user(sqlite3* db, const char* email, const char* password) {
-    sqlite3_stmt* stmt;
-    const char* sql = "SELECT 1 FROM USER WHERE email = ? AND password = ?;";
+// Returns 0 in case of failure, user id otherwise
+int authenticate_user(sqlite3 *db, const char *email, const char *password) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT id FROM USER WHERE email = ? AND password = ?;";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
@@ -20,13 +21,20 @@ int authenticate_user(sqlite3* db, const char* email, const char* password) {
 
     result = sqlite3_step(stmt);
 
+    if (result != SQLITE_ROW) {
+        sqlite3_finalize(stmt);
+        return 0;
+    }
+
+    int userId = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
-    return result == SQLITE_ROW;
+
+    return userId;
 }
 
-int db_register_user(sqlite3* db, const char* email, const char* password, const char* username) {
-    sqlite3_stmt* stmt;
-    const char* sql = "INSERT INTO USER (email, password, username) VALUES (?, ?, ?);";
+int db_register_user(sqlite3 *db, const char *email, const char *password, const char *username) {
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO USER (email, password, username) VALUES (?, ?, ?);";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
@@ -44,9 +52,9 @@ int db_register_user(sqlite3* db, const char* email, const char* password, const
     return result == SQLITE_DONE;
 }
 
-int delete_user(sqlite3* db, const char* email) {
-    sqlite3_stmt* stmt;
-    const char* sql = "DELETE FROM USER WHERE email = ?;";
+int delete_user(sqlite3 *db, const char *email) {
+    sqlite3_stmt *stmt;
+    const char *sql = "DELETE FROM USER WHERE email = ?;";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
@@ -62,9 +70,9 @@ int delete_user(sqlite3* db, const char* email) {
     return result == SQLITE_DONE;
 }
 
-char* get_username(sqlite3* db, int user_id) {
-    sqlite3_stmt* stmt;
-    const char* sql = "SELECT username FROM USER WHERE id = ?;";
+char *get_username(sqlite3 *db, int user_id) {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT username FROM USER WHERE id = ?;";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
@@ -81,8 +89,8 @@ char* get_username(sqlite3* db, int user_id) {
         return NULL;
     }
 
-    const char* username = (const char*)sqlite3_column_text(stmt, 0);
-    char* usernameCopy = (char*)malloc(strlen(username) + 1);
+    const char *username = (const char *)sqlite3_column_text(stmt, 0);
+    char *usernameCopy = (char *)malloc(strlen(username) + 1);
     strcpy(usernameCopy, username);
 
     sqlite3_finalize(stmt);
