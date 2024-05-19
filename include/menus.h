@@ -12,8 +12,7 @@ void send_request(SOCKET sock, const char* command, const char* email, const cha
 int receive_response(SOCKET sock);
 extern void start_listener_thread(SOCKET sock);
 extern void stop_listener_thread();
-extern void send_game_start(SOCKET sock, int user_id);
-extern void send_game_finish(SOCKET sock);
+
 
 #ifdef __cplusplus
 }

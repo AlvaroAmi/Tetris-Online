@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "menus.h"
 #include "database.h"
+#include "client.hpp"
 
 extern void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username);
 extern int receive_response(SOCKET sock);

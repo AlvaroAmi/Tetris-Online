@@ -20,8 +20,8 @@ gcc -c src/files/*.c src/menus/*.c src/main.c lib/sqlite-amalgamation-3080704/sq
 g++ -c src/database/database.c -Iinclude -o database.o
 
 Cliente:
-g++ -c src/client/client.cpp -Iinclude
-g++ database.o menus.o config_file_parser.o sqlite3.o client.o -o bin/client.exe -lws2_32
+g++ -c src/client/*.cpp -Iinclude
+g++ database.o menus.o config_file_parser.o sqlite3.o client.o client_main.o -o bin/client.exe -lws2_32
 
 Servidor:
 g++ -c src/server/server.cpp -Iinclude
