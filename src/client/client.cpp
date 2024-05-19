@@ -1,13 +1,11 @@
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <winsock2.h>
-#include <cstring>
-#include <string>
-#include <thread>
-#include <atomic>
-#include "menus.h"
+#include "client.hpp"
 #include "config_file_parser.h"
+#include "menus.h"
+#include <atomic>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -18,7 +16,7 @@ ofstream logFile("client_log.log", ios::app);
 atomic<bool> keep_running(false);
 thread listener_thread;
 
-void log(const string& message, const string& level) {
+void log(const string &message, const string &level) {
     time_t now = time(0);
     char dt[100];
     strftime(dt, sizeof(dt), "%Y-%m-%d %H:%M:%S", localtime(&now));
@@ -72,7 +70,7 @@ SOCKET connect_to_server() {
     return sock;
 }
 
-void send_request(SOCKET sock, const char* command, const char* email, const char* password, const char* username) {
+void send_request(SOCKET sock, const char *command, const char *email, const char *password, const char *username) {
     char message[256];
 
     if (username != NULL) {
@@ -107,22 +105,21 @@ int receive_response(SOCKET sock) {
     try {
         int result = std::stoi(server_reply);
         return result;
-    } catch (const std::invalid_argument& e) {
+    } catch (const std::invalid_argument &e) {
         log("Invalid response received, not a number: " + std::string(server_reply), "ERROR");
-        return -1; 
-    } catch (const std::out_of_range& e) {
+        return -1;
+    } catch (const std::out_of_range &e) {
         log("Number out of range in response: " + std::string(server_reply), "ERROR");
-        return -1; 
+        return -1;
     }
 }
-
 
 void listen_for_updates(SOCKET sock) {
     char receive_buffer[512];
     fd_set readfds;
     struct timeval tv;
-    
-    u_long mode = 1; //Not block mode
+
+    u_long mode = 1; // Not block mode
     ioctlsocket(sock, FIONBIO, &mode);
 
     while (keep_running) {
@@ -155,11 +152,11 @@ void listen_for_updates(SOCKET sock) {
         }
     }
 
-    mode = 0; //Block mode
+    mode = 0; // Block mode
     ioctlsocket(sock, FIONBIO, &mode);
 }
 
-void send_game_update(SOCKET sock, const string& matrix) {
+void send_game_update(SOCKET sock, const string &matrix) {
     string message = "GAME_UPDATE|" + matrix;
     if (send(sock, message.c_str(), message.length(), 0) < 0) {
         std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
@@ -174,7 +171,6 @@ void send_game_start(SOCKET sock, int user_id) {
         log("Send GAMESTART failed: " + to_string(WSAGetLastError()), "ERROR");
     }
 }
-
 
 void send_game_finish(SOCKET sock) {
     string message = "GAMEFINISH";
@@ -196,12 +192,12 @@ void stop_listener_thread() {
     }
 }
 
-int main() {
+void start_client() {
     log("Client application started", "INFO");
     SOCKET sock = connect_to_server();
     if (sock != INVALID_SOCKET) {
         display_menu(sock);
-        
+
         stop_listener_thread();
 
         closesocket(sock);
@@ -210,5 +206,4 @@ int main() {
         log("Winsock cleanup complete", "INFO");
     }
     log("Client application ended", "INFO");
-    return 0;
 }
