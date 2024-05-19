@@ -57,7 +57,7 @@ int main(/*const char* player1_username, const char* player2_username*/) {
     player1_username_win = newwin(3, 42, 2, 4);
     player2_username_win = newwin(3, 42, 2, 134);
 
-    // Data windows: Score Counter for each player
+    // Data windows: sent garbage counter for each player
     player1_garbage_win = newwin(3, 35, 26, 51);
     player2_garbage_win = newwin(3, 35, 26, 93);
 

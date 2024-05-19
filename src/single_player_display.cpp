@@ -19,7 +19,7 @@ using namespace std;
 #define MATRIX_COLS 10
 #define MATRIX_ROWS 20
 
-int single_player_display() {
+int main() {
     // WINDOWS
     WINDOW *outer_win;
     WINDOW *display_win;
@@ -76,9 +76,9 @@ int single_player_display() {
     score_win = newwin(3, 46, 16, 51);
     level_win = newwin(3, 46, 20, 51);
     lines_win = newwin(3, 46, 24, 51);
-
-    next_win = newwin(13, 46, 29, 51);
-    next_display_win = newwin(8, 16, 32, 67);
+        
+    next_win = newwin(15, 46, 28, 55);
+    next_display_win = newwin(12, 24, 30, 61);
 
     refresh();
 
@@ -101,10 +101,9 @@ int single_player_display() {
     mvwprintw(level_win, 1, 5, "LEVEL: \t\t\t 30");
     mvwprintw(lines_win, 1, 5, "LINES: \t\t\t 50");
 
-    mvwprintw(next_win, 0, 0, " ////////////////////////////////////////////  \n"
-                              "    \t\tNEXT TETROMINO:                           \n");
-
-    mvwprintw(next_win, 12, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
+    mvwprintw(next_win, 0, 0, " //////////////////////////////////  \n"
+                              "       NEXT TETROMINO:                           \n");
+    mvwprintw(next_win, 14, 0, " \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\");
 
     box(outer_win, 0, 0);
     box(display_win, 0, 0);
