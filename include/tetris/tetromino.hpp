@@ -32,7 +32,8 @@ enum Color {
     YELLOW,
     GREEN,
     PURPLE,
-    RED
+    RED,
+    GRAY // For garbage blocks
 };
 
 class Tetromino {
