@@ -133,13 +133,11 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
         }
         const char* email = param1;
         const char* password = param2;
-        if (authenticate_user(db, email, password) == 1) {
-            const char* response = "Login successful";
-            send(communication_socket, response, strlen(response), 0);
-        } else {
-            const char* response = "Login failed";
-            send(communication_socket, response, strlen(response), 0);
-        }
+
+        int user_ID = authenticate_user(db, email, password);
+        std::string response = std::to_string(user_ID);
+        send(communication_socket, response.c_str(), response.length(), 0);
+
     } else if (strcmp(command, "REGISTER") == 0) {
         if (param1 == nullptr || param2 == nullptr || param3 == nullptr) {
             const char* response = "Invalid request format";
@@ -151,10 +149,10 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
         const char* password = param2;
         const char* username = param3;
         if (db_register_user(db, email, password, username) == 1) {
-            const char* response = "Registration successful";
+            const char* response = "1";
             send(communication_socket, response, strlen(response), 0);
         } else {
-            const char* response = "Registration failed";
+            const char* response = "0";
             send(communication_socket, response, strlen(response), 0);
         }
     } else if (strcmp(command, "GAMESTART") == 0) {

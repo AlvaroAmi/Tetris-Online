@@ -95,21 +95,27 @@ int receive_response(SOCKET sock) {
     log("Receiving response from server", "INFO");
     if ((recv_size = recv(sock, server_reply, 200, 0)) == SOCKET_ERROR) {
         std::cerr << "recv failed: " << WSAGetLastError() << std::endl;
-        log("recv failed: " + to_string(WSAGetLastError()), "ERROR");
-        return 0;
+        log("recv failed: " + std::to_string(WSAGetLastError()), "ERROR");
+        return -1;
     }
 
     server_reply[recv_size] = '\0';
 
-    cout << "Server reply: " << server_reply << endl;
-    log("Server reply: " + string(server_reply), "INFO");
+    std::cout << "Server reply: " << server_reply << std::endl;
+    log("Server reply: " + std::string(server_reply), "INFO");
 
-    if (strcmp(server_reply, "Login successful") == 0 || strcmp(server_reply, "Registration successful") == 0) {
-        return 1;
+    try {
+        int result = std::stoi(server_reply);
+        return result;
+    } catch (const std::invalid_argument& e) {
+        log("Invalid response received, not a number: " + std::string(server_reply), "ERROR");
+        return -1; 
+    } catch (const std::out_of_range& e) {
+        log("Number out of range in response: " + std::string(server_reply), "ERROR");
+        return -1; 
     }
-
-    return 0;
 }
+
 
 void listen_for_updates(SOCKET sock) {
     char receive_buffer[512];

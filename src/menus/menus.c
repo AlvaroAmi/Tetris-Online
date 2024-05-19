@@ -17,6 +17,7 @@ extern void send_game_start(SOCKET sock, int user_id);
 extern void send_game_finish(SOCKET sock);
 
 int isLoggedIn = 0;
+int userID = 0;
 
 //////////////////////////////////////ASTHETICS///////////////////////////////////////
 
@@ -76,7 +77,7 @@ void login(SOCKET sock) {
     scanf("%99s", password);
 
     send_request(sock, "LOGIN", email, password, NULL);
-    isLoggedIn = receive_response(sock);
+    userID = isLoggedIn = receive_response(sock);
 
     if (isLoggedIn) {
         start_listener_thread(sock);
@@ -131,7 +132,7 @@ void register_user(SOCKET sock) {
 }
 
 void start_game(SOCKET sock) {
-    send_game_start(sock,1); //TODO: GET USER ID FROM DB AFTER LOGING
+    send_game_start(sock,userID); //TODO: GET USER ID FROM DB AFTER LOGING
     // Add game logic here
 }
 
