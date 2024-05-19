@@ -17,7 +17,6 @@ extern void stop_listener_thread();
 extern void send_game_start(SOCKET sock, int user_id);
 extern void send_game_finish(SOCKET sock);
 
-int isLoggedIn = 0;
 int userID = 0;
 
 //////////////////////////////////////ASTHETICS///////////////////////////////////////
@@ -78,9 +77,9 @@ void login(SOCKET sock) {
     scanf("%99s", password);
 
     send_request(sock, "LOGIN", email, password, NULL);
-    userID = isLoggedIn = receive_response(sock);
+    userID = receive_response(sock);
 
-    if (isLoggedIn) {
+    if (userID) {
         start_listener_thread(sock);
     }
     
@@ -133,7 +132,7 @@ void register_user(SOCKET sock) {
 }
 
 void start_game(SOCKET sock) {
-    send_game_start(sock,userID); //TODO: GET USER ID FROM DB AFTER LOGING
+    send_game_start(sock,userID); 
     // Add game logic here
 }
 
@@ -193,7 +192,7 @@ void display_menu(SOCKET sock) {
 
     do {
         clear_screen();
-        if (isLoggedIn == 0) {
+        if (userID == 0) {
             print_tetris_logo();
             printf("1. Iniciar sesion\n");
             printf("2. Registrarse\n");
@@ -224,7 +223,7 @@ void display_menu(SOCKET sock) {
                 continue;
             }
             if (input[0] == 'q' || input[0] == 'Q') {
-                isLoggedIn = 0;
+                userID = 0;
                 stop_listener_thread();
                 finish_game(sock);
                 continue;
@@ -239,7 +238,7 @@ void display_menu(SOCKET sock) {
                     //Initialize offline game
                     break;
                 case 3:
-                    isLoggedIn = 0; 
+                    userID = 0; 
                     stop_listener_thread();
                     finish_game(sock);
                     break;
