@@ -1,6 +1,8 @@
 #ifndef TETRIS_GAME_HPP
 #define TETRIS_GAME_HPP
 
+#include "tetris/bag_random_generator.hpp"
+#include "tetris/playfield.hpp"
 #include "tetris/vector2.hpp"
 
 #define MAX_DEFINED_LEVEL 29
@@ -11,8 +13,28 @@ protected:
     static constexpr Vector2<int> LEFT_VECTOR = Vector2<int>(-1, 0);
     static constexpr Vector2<int> RIGHT_VECTOR = Vector2<int>(1, 0);
     static constexpr Vector2<int> DOWN_VECTOR = Vector2<int>(0, -1);
-    static constexpr int GRAVITY[MAX_DEFINED_LEVEL + 1] = {48, 43, 38, 33, 28, 23, 18, 13, 8, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1};
-    virtual void updateGame() = 0;
+
+    Playfield playfield;
+    Tetromino currentTetromino;
+
+    TetrominoType nextTetrominoType; // Buffered tetromino type that appears in the "next" window
+    BagRandomGenerator bagRandomGenerator;
+
+    bool gameIsOver = false;
+    int ticksTillGravity; // NOTE: Initialize this in the constructor of the derived class to the base gravity value
+
+    void spawnTetromino();
+
+    void tryMove(Vector2<int> direction);
+
+    virtual void lockTetromino();
+
+    void tickGravity();
+
+    virtual void updateGame();
+    virtual void resetTicksTillGravity() = 0;
+    virtual void lineClearCallback(int linesCleared) = 0;
+    virtual void gameOver() = 0;
 };
 
 #endif // TETRIS_GAME_HPP

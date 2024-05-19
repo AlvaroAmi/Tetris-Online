@@ -13,8 +13,6 @@ PlayfieldRenderer::PlayfieldRenderer(int startx, int starty, const Playfield &pl
 
 PlayfieldRenderer::~PlayfieldRenderer() {
     // delwin(window);
-    if (window != nullptr) {
-    }
 }
 
 Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const Tetromino &tetromino))[PLAYFIELD_WIDTH] {
@@ -36,7 +34,7 @@ Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const
     return renderableMatrix;
 }
 
-void PlayfieldRenderer::renderPlayfield(const Tetromino &currentTetromino) {
+void PlayfieldRenderer::renderPlayfield(const Tetromino &currentTetromino) const {
     Color(*matrix)[PLAYFIELD_WIDTH] = getRenderableMatrix(playfield, currentTetromino);
 
     for (int row = VISIBLE_PLAYFIELD_HEIGHT - 1; row >= 0; row--) {

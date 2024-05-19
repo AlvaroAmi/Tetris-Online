@@ -18,13 +18,12 @@ private:
     Playfield playfield;
     WINDOW *window = nullptr;
 
-    static Color (*getRenderableMatrix(const Playfield &playfield, const Tetromino &tetromino))[PLAYFIELD_WIDTH];
-
 public:
     PlayfieldRenderer() = default;
     PlayfieldRenderer(int startx, int starty, const Playfield &playfield);
     ~PlayfieldRenderer();
-    void renderPlayfield(const Tetromino &currentTetromino);
+    static Color (*getRenderableMatrix(const Playfield &playfield, const Tetromino &tetromino))[PLAYFIELD_WIDTH];
+    void renderPlayfield(const Tetromino &currentTetromino) const;
     static void printPlayfield(const Playfield &playfield, const Tetromino &currentTetromino);
 };
 
