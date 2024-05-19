@@ -32,7 +32,7 @@ int authenticate_user(sqlite3 *db, const char *email, const char *password) {
     return userId;
 }
 
-int register_user(sqlite3 *db, const char *email, const char *password, const char *username) {
+int db_register_user(sqlite3 *db, const char *email, const char *password, const char *username) {
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO USER (email, password, username) VALUES (?, ?, ?);";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
