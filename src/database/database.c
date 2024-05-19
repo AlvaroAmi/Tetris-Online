@@ -32,7 +32,7 @@ int authenticate_user(sqlite3 *db, const char *email, const char *password) {
     return userId;
 }
 
-int db_register_user(sqlite3 *db, const char *email, const char *password, const char *username) {
+int register_user(sqlite3 *db, const char *email, const char *password, const char *username) {
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO USER (email, password, username) VALUES (?, ?, ?);";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
@@ -95,4 +95,96 @@ char *get_username(sqlite3 *db, int user_id) {
 
     sqlite3_finalize(stmt);
     return usernameCopy;
+}
+
+int insert_multiplayer_game(sqlite3 *db, int idUser1, int idUser2, int firstWins, const char *start, const char *end){
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO Multiplayer_Game (idUser1, idUser2, firstWins, start, end) VALUES (?, ?, ?, ?, ?);";
+    int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Error preparing insert multiplayer game statement: %s\n", sqlite3_errmsg(db));
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, idUser1);
+    sqlite3_bind_int(stmt, 2, idUser2);
+    sqlite3_bind_int(stmt, 3, firstWins);
+    sqlite3_bind_text(stmt, 4, start, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, end, -1, SQLITE_STATIC);
+
+    result = sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+    return result == SQLITE_DONE;
+}
+
+int insert_singleplayer_game(sqlite3 *db, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level, int player_id){
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO Singleplayer_Game (start_datetime, finish_datetime, score, linesCleared, level, player_id) VALUES (?, ?, ?, ?, ?, ?);";
+    int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Error preparing insert singleplayer game statement: %s\n", sqlite3_errmsg(db));
+        return 0;
+    }
+
+    sqlite3_bind_text(stmt, 1, start_datetime, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, finish_datetime, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 3, score);
+    sqlite3_bind_int(stmt, 4, linesCleared);
+    sqlite3_bind_int(stmt, 5, level);
+    sqlite3_bind_int(stmt, 6, player_id);
+
+    result = sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+    return result == SQLITE_DONE;
+}
+
+char *calculate_game_duration(sqlite3 *db, int id, int is_multiplayer) {
+    const char *sql;
+    if (is_multiplayer) {
+        sql = "SELECT start, end FROM Multiplayer_Game WHERE id = ?;";
+    } else {
+        sql = "SELECT start_datetime, finish_datetime FROM Singleplayer_Game WHERE id = ?;";
+    }
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, 0) != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, id);
+
+    char *duration_str = NULL;
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *start = (const char *)sqlite3_column_text(stmt, 0);
+        const char *end = (const char *)sqlite3_column_text(stmt, 1);
+
+        struct tm tm_start, tm_end;
+        time_t t_start, t_end;
+
+        strptime(start, "%Y-%m-%d %H:%M:%S", &tm_start);
+        strptime(end, "%Y-%m-%d %H:%M:%S", &tm_end);
+
+        t_start = mktime(&tm_start);
+        t_end = mktime(&tm_end);
+
+        double duration = difftime(t_end, t_start);
+
+        int minutes = (int)(duration / 60);
+        int seconds = (int)(duration - (minutes * 60));
+
+        duration_str = malloc(10); // Allocate memory for the duration string
+        if (duration_str != NULL) {
+            snprintf(duration_str, 10, "%02d:%02d", minutes, seconds);
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return duration_str;
 }
