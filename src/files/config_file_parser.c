@@ -54,7 +54,7 @@ static void parser_error(struct parser *parser, const char *message) {
 
 static char *get_string_from_range(const char *src, size_t start, size_t end) {
     size_t size = end - start;
-    char *str = malloc(size + 1);
+    char *str = (char *)malloc(size + 1);
     memcpy(str, src + start, size);
     str[size] = '\0';
     return str;
@@ -92,13 +92,12 @@ static void parse_string(struct parser *parser, struct config_parameter *config_
 
 static void parse_number(struct parser *parser, struct config_parameter *config_parameter) {
     size_t first_char_position = parser->cursor - 1;
-    
+
     while (!is_eof(parser) && (isdigit(parser->src[parser->cursor]) || parser->src[parser->cursor] == '.' || parser->src[parser->cursor] == '+' || parser->src[parser->cursor] == '-')) {
         parser->cursor++;
     }
-    
-    char *number_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
+    char *number_str = get_string_from_range(parser->src, first_char_position, parser->cursor);
 
     char *endptr;
     config_parameter->value.integer = strtoll(number_str, &endptr, 10);
@@ -169,7 +168,7 @@ static struct config_parameter *next_config_parameter(struct parser *parser) {
                 break;
 
             case EXPECTING_VALUE:;
-                struct config_parameter *parameter = malloc(sizeof(struct config_parameter));
+                struct config_parameter *parameter = (struct config_parameter *)malloc(sizeof(struct config_parameter));
                 parameter->key = key;
 
                 if (c == '"') {
@@ -215,13 +214,12 @@ struct config_parameter *read_config_file(const char *filename) {
     fseek(fp, 0, SEEK_SET);
 
     struct parser parser = {
-        .src = malloc(fpsize + 1),
+        .src = (char *)malloc(fpsize + 1),
         .cursor = 0,
-        .src_length = fpsize,
+        .src_length = (size_t)fpsize,
         .line = 1,
         .beginning_of_line = 0,
-        .state = EXPECTING_IDENTIFIER
-    };
+        .state = EXPECTING_IDENTIFIER};
 
     fread(parser.src, 1, fpsize, fp);
     parser.src[fpsize] = '\0';
