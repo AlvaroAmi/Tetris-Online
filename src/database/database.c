@@ -152,13 +152,34 @@ char *get_username(sqlite3 *db, int user_id) {
     return usernameCopy;
 }
 
-int insert_multiplayer_game(sqlite3 *db, int idUser1, int idUser2, int firstWins, const char *start, const char *end){
+int insert_game_duration(sqlite3 *db, int user_id, int game_id, const char *game_duration) {
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO Game_Sessions (idUser, game_id, game_duration) VALUES (?, ?, ?);";
+    int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+
+    if (result != SQLITE_OK) {
+        fprintf(stderr, "Error preparando la sentencia de inserción: %s\n", sqlite3_errmsg(db));
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, user_id);
+    sqlite3_bind_int(stmt, 2, game_id);
+    sqlite3_bind_text(stmt, 3, game_duration, -1, SQLITE_STATIC);
+
+    result = sqlite3_step(stmt);
+
+    sqlite3_finalize(stmt);
+    return result == SQLITE_DONE;
+}
+
+
+int insert_multiplayer_game(sqlite3 *db, int idUser1, int idUser2, int firstWins, const char *start, const char *end) {
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO Multiplayer_Game (idUser1, idUser2, firstWins, start, end) VALUES (?, ?, ?, ?, ?);";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
-        fprintf(stderr, "Error preparing insert multiplayer game statement: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Error preparando la sentencia de inserción: %s\n", sqlite3_errmsg(db));
         return 0;
     }
 
@@ -170,17 +191,26 @@ int insert_multiplayer_game(sqlite3 *db, int idUser1, int idUser2, int firstWins
 
     result = sqlite3_step(stmt);
 
+    int game_id = sqlite3_last_insert_rowid(db);
+    if (result == SQLITE_DONE) {
+        char *duration = calculate_game_duration(db, game_id, 1);
+        if (duration != NULL) {
+            insert_game_duration(db, idUser1, game_id, duration);
+            free(duration);
+        }
+    }
+
     sqlite3_finalize(stmt);
     return result == SQLITE_DONE;
 }
 
-int insert_singleplayer_game(sqlite3 *db, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level, int player_id){
+int insert_singleplayer_game(sqlite3 *db, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level, int player_id) {
     sqlite3_stmt *stmt;
     const char *sql = "INSERT INTO Singleplayer_Game (start_datetime, finish_datetime, score, linesCleared, level, player_id) VALUES (?, ?, ?, ?, ?, ?);";
     int result = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 
     if (result != SQLITE_OK) {
-        fprintf(stderr, "Error preparing insert singleplayer game statement: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Error preparando la sentencia de inserción: %s\n", sqlite3_errmsg(db));
         return 0;
     }
 
@@ -192,6 +222,15 @@ int insert_singleplayer_game(sqlite3 *db, const char *start_datetime, const char
     sqlite3_bind_int(stmt, 6, player_id);
 
     result = sqlite3_step(stmt);
+
+    int game_id = sqlite3_last_insert_rowid(db);
+    if (result == SQLITE_DONE) {
+        char *duration = calculate_game_duration(db, game_id, 0);
+        if (duration != NULL) {
+            insert_game_duration(db, player_id, game_id, duration);
+            free(duration);
+        }
+    }
 
     sqlite3_finalize(stmt);
     return result == SQLITE_DONE;
