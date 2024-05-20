@@ -19,7 +19,7 @@ void destroy_multiplayer_game(multiplayer_tetris_game game) {
     delete game;
 }
 
-void update_enemy_playfield(singleplayer_tetris_game game, char *matrix_c_string) {
+void update_enemy_playfield(singleplayer_tetris_game game, const char *matrix_c_string) {
     std::string matrixString(matrix_c_string);
     ((MultiplayerTetrisGame *)game)->updateEnemyPlayfield(matrixString);
 }

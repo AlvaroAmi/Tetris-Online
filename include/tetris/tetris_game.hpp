@@ -16,6 +16,7 @@ protected:
     static constexpr Vector2<int> DOWN_VECTOR = Vector2<int>(0, -1);
 
     Playfield playfield;
+    Playfield enemyPlayfield;
     Tetromino currentTetromino;
 
     TetrominoType nextTetrominoType; // Buffered tetromino type that appears in the "next" window

@@ -15,7 +15,7 @@ PlayfieldRenderer::~PlayfieldRenderer() {
     // delwin(window);
 }
 
-Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const Tetromino &tetromino))[PLAYFIELD_WIDTH] {
+Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, std::optional<Tetromino> optionalTetromino))[PLAYFIELD_WIDTH] {
     Color(*renderableMatrix)[PLAYFIELD_WIDTH] = new Color[VISIBLE_PLAYFIELD_HEIGHT][PLAYFIELD_WIDTH];
     // Copy playfield matrix
     for (int y = 0; y < VISIBLE_PLAYFIELD_HEIGHT; y++) {
@@ -23,6 +23,9 @@ Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const
             renderableMatrix[y][x] = playfield.getTile(x, y);
         }
     }
+
+    if (!optionalTetromino.has_value()) return renderableMatrix;
+    Tetromino tetromino = optionalTetromino.value();
 
     Vector2<int> *tetrominoBlocks = tetromino.getBlocks();
     for (int i = 0; i < BLOCKS_PER_TETROMINO; i++) {
@@ -34,26 +37,23 @@ Color (*PlayfieldRenderer::getRenderableMatrix(const Playfield &playfield, const
     return renderableMatrix;
 }
 
-void PlayfieldRenderer::renderPlayfield(const Tetromino &currentTetromino) const {
+void PlayfieldRenderer::renderPlayfield(std::optional<Tetromino> currentTetromino) const {
     Color(*matrix)[PLAYFIELD_WIDTH] = getRenderableMatrix(playfield, currentTetromino);
 
     for (int row = VISIBLE_PLAYFIELD_HEIGHT - 1; row >= 0; row--) {
         for (int column = 0; column < PLAYFIELD_WIDTH; column++) {
-            Color value = matrix[row][column];
+            Color color = matrix[row][column];
             int x_coordinate = 1 + column * 4;
             int y_coordinate = (VISIBLE_PLAYFIELD_HEIGHT * 2) - (1 + row * 2);
 
-            if (value == 0) {
-                wattron(window, COLOR_PAIR(9));
-                mvwaddstr(window, y_coordinate, x_coordinate, "    ");
-                mvwaddstr(window, y_coordinate + 1, x_coordinate, "    ");
-                wattroff(window, COLOR_PAIR(9));
-            } else {
-                wattron(window, COLOR_PAIR(value));
-                mvwaddstr(window, y_coordinate, x_coordinate, "    ");
-                mvwaddstr(window, y_coordinate + 1, x_coordinate, "    ");
-                wattroff(window, COLOR_PAIR(value));
+            if (color == Color::GRAY && (COLORS <= Color::GRAY || COLOR_PAIRS <= Color::GRAY)) {
+                color = Color::ORANGE; // In this case we set orange (J tetromino) to be white
             }
+
+            wattron(window, COLOR_PAIR(color));
+            mvwaddstr(window, y_coordinate, x_coordinate, "    ");
+            mvwaddstr(window, y_coordinate + 1, x_coordinate, "    ");
+            wattroff(window, COLOR_PAIR(color));
         }
     }
     wrefresh(window);

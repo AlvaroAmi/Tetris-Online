@@ -19,11 +19,8 @@ class MultiplayerTetrisGame : TetrisGame {
     SOCKET sock;
 
     int pendingGarbageLines = 0;
-
     int garbageLinesSent = 0;
     int garbageLinesReceived = 0;
-
-    Playfield enemyPlayfield;
 
     std::mt19937 gen;
     std::uniform_int_distribution<> distribution;

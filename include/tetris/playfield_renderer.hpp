@@ -3,6 +3,7 @@
 
 #include "tetris/playfield.hpp"
 #include "tetris/tetromino.hpp"
+#include <optional>
 
 #if defined(_WIN32) || defined(_WIN64)
 #define NCURSES_STATIC
@@ -22,8 +23,8 @@ public:
     PlayfieldRenderer() = default;
     PlayfieldRenderer(int startx, int starty, const Playfield &playfield);
     ~PlayfieldRenderer();
-    static Color (*getRenderableMatrix(const Playfield &playfield, const Tetromino &tetromino))[PLAYFIELD_WIDTH];
-    void renderPlayfield(const Tetromino &currentTetromino) const;
+    static Color (*getRenderableMatrix(const Playfield &playfield, std::optional<Tetromino> optionalTetromino))[PLAYFIELD_WIDTH];
+    void renderPlayfield(std::optional<Tetromino> tetromino) const;
     static void printPlayfield(const Playfield &playfield, const Tetromino &currentTetromino);
 };
 

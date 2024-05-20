@@ -1,15 +1,15 @@
 #include "tetris/singleplayer_tetris_game.hpp"
+#include "client.hpp"
+#include "database.h"
 #include "tetris/playfield_renderer.hpp"
+#include "tetris/singleplayer_tetris_game.hpp"
+#include "tetris/singleplayer_tetris_game_renderer.hpp"
 #include "tetris/srs_manager.hpp"
 #include "tetris/tetris_game.hpp"
 #include "tetris/tetromino.hpp"
 #include <chrono>
 #include <iostream>
 #include <thread>
-#include "client.hpp"
-#include "tetris/singleplayer_tetris_game.hpp"
-#include "tetris/singleplayer_tetris_game_renderer.hpp"
-#include "database.h"
 
 SingleplayerTetrisGame::SingleplayerTetrisGame(SOCKET sock) : sock(sock), renderer(*this) {
     nextTetrominoType = bagRandomGenerator.getNextTetrominoType();
@@ -32,7 +32,6 @@ SingleplayerTetrisGame::SingleplayerTetrisGame(SOCKET sock) : sock(sock), render
 void SingleplayerTetrisGame::gameOver() {
     gameIsOver = true;
     // TODO: Implement game over screen
-    // TODO: Save data to server
     endTime = std::chrono::system_clock::now();
 
     std::time_t start_time_t = std::chrono::system_clock::to_time_t(startTime);

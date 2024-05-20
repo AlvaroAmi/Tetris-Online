@@ -61,21 +61,25 @@ void MultiplayerTetrisGame::enqueueGarbage(int lines) {
 }
 
 void MultiplayerTetrisGame::addGarbage() {
+    if (pendingGarbageLines == 0) return;
+
     garbageLinesReceived += pendingGarbageLines;
     int garbageHoleIndex = distribution(gen);
 
     // Shift the playfield up
     for (int y = PLAYFIELD_HEIGHT - pendingGarbageLines; y >= 0; y--) {
         for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
-            playfield.setTile(x, y + pendingGarbageLines, enemyPlayfield.getTile(x, y));
+            playfield.setTile(x, y + pendingGarbageLines, playfield.getTile(x, y));
         }
     }
 
     // Add the garbage
     for (int i = 0; i < pendingGarbageLines; i++) {
         for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
-            if (x == garbageHoleIndex) continue;
-            playfield.setTile(x, i, Color::GRAY);
+            if (x == garbageHoleIndex)
+                playfield.setTile(x, i, Color::NONE);
+            else
+                playfield.setTile(x, i, Color::GRAY);
         }
     }
 
@@ -84,14 +88,15 @@ void MultiplayerTetrisGame::addGarbage() {
 
 void MultiplayerTetrisGame::sendGarbage(int lines) {
     garbageLinesSent += lines;
+    send_garbage(sock, lines);
 }
 
 void MultiplayerTetrisGame::lineClearCallback(int linesCleared) {
     if (linesCleared == 0) return;
     if (linesCleared == 4)
-        sendGarbage(4);
+        this->sendGarbage(4);
     else
-        sendGarbage(linesCleared - 1);
+        this->sendGarbage(linesCleared - 1);
 }
 
 void MultiplayerTetrisGame::resetTicksTillGravity() {

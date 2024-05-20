@@ -74,9 +74,8 @@ void TetrisGameRenderer::initColors(void) {
 
     if (COLORS >= 8 && COLOR_PAIRS >= 8) {
         init_pair(Color::GRAY, COLOR_BLACK, XTERM_GRAY);
-    } else {
-        init_pair(Color::GRAY, COLOR_BLACK, COLOR_WHITE); // Fallback to white. Not ideal but we don't have any colors left
     }
+    // We will fallback to white in the renderer. Not ideal but we don't have any colors left
 };
 
 void TetrisGameRenderer::displayNextTetromino(WINDOW *win, TetrominoType tetrominoType) const {

@@ -1,12 +1,11 @@
 #include "tetris/multiplayer_tetris_game_renderer.hpp"
+#include <optional>
 
 #define WIN_HEIGHT 50
 #define WIN_WIDTH 180
 
 MultiplayerTetrisGameRenderer::MultiplayerTetrisGameRenderer(const MultiplayerTetrisGame &game)
-    : TetrisGameRenderer(WIN_WIDTH, WIN_HEIGHT), game(game) {
-    playfieldRenderer = PlayfieldRenderer(4, 6, game.playfield);
-    enemyPlayfieldRenderer = PlayfieldRenderer(134, 6, game.enemyPlayfield);
+    : TetrisGameRenderer(WIN_WIDTH, WIN_HEIGHT), game(game), playfieldRenderer(4, 6, game.playfield), enemyPlayfieldRenderer(134, 6, game.enemyPlayfield) {
     title_win = newwin(10, 60, 7, 60);
 
     player1_username_win = newwin(3, 42, 2, 4);
@@ -90,7 +89,7 @@ MultiplayerTetrisGameRenderer::~MultiplayerTetrisGameRenderer() {
 
 void MultiplayerTetrisGameRenderer::render() const {
     playfieldRenderer.renderPlayfield(game.currentTetromino);
-    // enemyPlayfieldRenderer.renderPlayfield();
+    enemyPlayfieldRenderer.renderPlayfield(std::nullopt);
 
     mvwprintw(player1_garbage_win, 1, 5, "GARBAGE SENT: \t     %d", game.garbageLinesSent);
     mvwprintw(player2_garbage_win, 1, 5, "GARBAGE SENT: \t     %d", game.garbageLinesReceived);

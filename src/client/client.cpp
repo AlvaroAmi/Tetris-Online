@@ -166,11 +166,11 @@ void listen_for_updates(SOCKET sock) {
             if (received_message.rfind("UPDATE|", 0) == 0) {
                 string matrix = received_message.substr(7);
                 log("Update from server (matrix): " + matrix, "INFO");
-                // if (game != nullptr) game->updateEnemyPlayfield(matrix);
+                if (game != nullptr) game->updateEnemyPlayfield(matrix);
             } else if (received_message.rfind("GARBAGE|", 0) == 0) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
-                // if (game != nullptr) game->enqueueGarbage(lines);
+                if (game != nullptr) game->enqueueGarbage(lines);
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");
