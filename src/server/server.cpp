@@ -46,52 +46,56 @@ bool open_database(const char* db_path) {
     return true;
 }
 
-void add_to_matchmaking_queue(int client_id) {
+void add_to_matchmaking_queue(int user_id) {
     lock_guard<mutex> guard(clients_mutex);
 
-    if (find(matchmaking_queue.begin(), matchmaking_queue.end(), client_id) != matchmaking_queue.end()) {
-        log("Client " + to_string(client_id) + " is already in the matchmaking queue", "INFO");
+    if (find(matchmaking_queue.begin(), matchmaking_queue.end(), user_id) != matchmaking_queue.end()) {
+        log("Client " + to_string(user_id) + " is already in the matchmaking queue", "INFO");
         return;
     }
 
-    matchmaking_queue.push_back(client_id);
-    log("Client " + to_string(client_id) + " added to matchmaking queue", "INFO");
+    matchmaking_queue.push_back(user_id);
+    log("Client " + to_string(user_id) + " added to matchmaking queue", "INFO");
 
     if (matchmaking_queue.size() >= 2) {
-        int client1 = matchmaking_queue.front();
+        int user1 = matchmaking_queue.front();
         matchmaking_queue.erase(matchmaking_queue.begin());
-        int client2 = matchmaking_queue.front();
+        int user2 = matchmaking_queue.front();
         matchmaking_queue.erase(matchmaking_queue.begin());
 
-        pairs.push_back({client1, client2});
-        log("Matched clients " + to_string(client1) + " and " + to_string(client2), "INFO");
+        pairs.push_back({user1, user2});
+        log("Matched clients " + to_string(user1) + " and " + to_string(user2), "INFO");
 
-        string message = "MATCHED|" + to_string(client2);
-        send(clients[client1], message.c_str(), message.length(), 0);
-        message = "MATCHED|" + to_string(client1);
-        send(clients[client2], message.c_str(), message.length(), 0);
+        // Map users to their sockets
+        SOCKET socket1 = user_to_socket[user1];
+        SOCKET socket2 = user_to_socket[user2];
+
+        string message = "MATCHED|" + to_string(user2);
+        send(socket1, message.c_str(), message.length(), 0);
+        message = "MATCHED|" + to_string(user1);
+        send(socket2, message.c_str(), message.length(), 0);
     }
 }
 
-void remove_from_matchmaking_queue(int client_id) {
+void remove_from_matchmaking_queue(int user_id) {
     lock_guard<mutex> guard(clients_mutex);
-    matchmaking_queue.erase(remove(matchmaking_queue.begin(), matchmaking_queue.end(), client_id), matchmaking_queue.end());
-    log("Client " + to_string(client_id) + " removed from matchmaking queue", "INFO");
+    matchmaking_queue.erase(remove(matchmaking_queue.begin(), matchmaking_queue.end(), user_id), matchmaking_queue.end());
+    log("Client " + to_string(user_id) + " removed from matchmaking queue", "INFO");
 }
 
-void forward_to_enemy(int client_id, const string& message) {
+void forward_to_enemy(int user_id, const string& message) {
     lock_guard<mutex> guard(clients_mutex);
 
     //Search enemy ID
-    auto it = find_if(pairs.begin(), pairs.end(), [client_id](const pair<int, int>& p) {
-        return p.first == client_id || p.second == client_id;
+    auto it = find_if(pairs.begin(), pairs.end(), [user_id](const pair<int, int>& p) {
+        return p.first == user_id || p.second == user_id;
     });
 
     if (it != pairs.end()) {
-        int enemy_id = (it->first == client_id) ? it->second : it->first;
+        int enemy_id = (it->first == user_id) ? it->second : it->first;
 
         if (clients.find(enemy_id) != clients.end()) {
-            SOCKET enemy_socket = clients[enemy_id];
+            SOCKET enemy_socket = user_to_socket[enemy_id];
             send(enemy_socket, message.c_str(), message.length(), 0);
         }
     }

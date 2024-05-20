@@ -166,6 +166,10 @@ void listen_for_updates(SOCKET sock) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
                 //Añadir función para añadir basura
+            } else if (received_message.rfind("MATCHED|", 0) == 0) {
+                cout << "Partida encontrada" << endl;
+                log("Match found from server", "INFO");
+                //Añadir función para manejar el emparejamiento
             } else {
                 cout << "Unknown message from server: " << received_message << endl;
                 log("Unknown message from server: " + received_message, "INFO");
@@ -176,6 +180,7 @@ void listen_for_updates(SOCKET sock) {
     mode = 0; // Blocking mode
     ioctlsocket(sock, FIONBIO, &mode);
 }
+
 
 void send_game_update(SOCKET sock, const string &matrix) {
     string message = "GAME_UPDATE|" + matrix;
