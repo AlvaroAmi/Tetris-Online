@@ -1,6 +1,7 @@
 #include "client.hpp"
 #include "config_file_parser.h"
 #include "menus.h"
+#include "tetris/tetris_c_api.h"
 #include <atomic>
 #include <ctime>
 #include <fstream>
@@ -11,8 +12,12 @@ using namespace std;
 
 #define DEFAULT_SERVER_IP "127.0.0.1" // Default values if config file fails
 #define DEFAULT_SERVER_PORT 6000
+extern "C" void menus_create_multiplayer_game(SOCKET sock);
 
 int user_id = 0;
+int block_menu_loop = 0;
+
+multiplayer_tetris_game game;
 
 ofstream logFile("client_log.log", ios::app);
 atomic<bool> keep_running(false);
@@ -161,15 +166,15 @@ void listen_for_updates(SOCKET sock) {
             if (received_message.rfind("UPDATE|", 0) == 0) {
                 string matrix = received_message.substr(7);
                 log("Update from server (matrix): " + matrix, "INFO");
-                //Añadir función para actualizar la pantalla
+                // if (game != nullptr) game->updateEnemyPlayfield(matrix);
             } else if (received_message.rfind("GARBAGE|", 0) == 0) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
-                //Añadir función para añadir basura
+                // if (game != nullptr) game->enqueueGarbage(lines);
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");
-                //Añadir función para manejar el emparejamiento
+                menus_create_multiplayer_game(sock);
             } else {
                 cout << "Unknown message from server: " << received_message << endl;
                 log("Unknown message from server: " + received_message, "INFO");
@@ -180,7 +185,6 @@ void listen_for_updates(SOCKET sock) {
     mode = 0; // Blocking mode
     ioctlsocket(sock, FIONBIO, &mode);
 }
-
 
 void send_game_update(SOCKET sock, const string &matrix) {
     string message = "GAME_UPDATE|" + matrix;

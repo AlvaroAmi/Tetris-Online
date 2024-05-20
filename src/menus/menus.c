@@ -17,6 +17,8 @@ extern void start_listener_thread(SOCKET sock);
 extern void stop_listener_thread();
 extern void send_game_start(SOCKET sock, int user_id);
 extern void send_game_finish(SOCKET sock);
+extern multiplayer_tetris_game game;
+extern int block_menu_loop;
 
 int userID = 0;
 
@@ -134,8 +136,12 @@ void register_user(SOCKET sock) {
 
 void start_game(SOCKET sock) {
     send_game_start(sock, userID);
+    block_menu_loop = 1;
+}
 
-    
+void menus_create_multiplayer_game(SOCKET sock) {
+    game = create_multiplayer_tetris_game(sock);
+    block_menu_loop = 0;
 }
 
 void finish_game(SOCKET sock) {
@@ -193,6 +199,9 @@ void display_menu(SOCKET sock) {
     int option;
 
     do {
+        if (block_menu_loop) {
+            continue;
+        }
         clear_screen();
         if (userID == 0) {
             print_tetris_logo();
