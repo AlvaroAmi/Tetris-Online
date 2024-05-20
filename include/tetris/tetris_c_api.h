@@ -6,7 +6,7 @@
 #else
 #define EXTERNC
 #endif
-
+#include <winsock2.h>
 typedef void *singleplayer_tetris_game;
 typedef void *multiplayer_tetris_game;
 

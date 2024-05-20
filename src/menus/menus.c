@@ -260,7 +260,7 @@ void display_menu(SOCKET sock) {
                 start_game(sock);
                 break;
             case 2:
-                create_singleplayer_tetris_game();
+                create_singleplayer_tetris_game(sock);
                 break;
             case 3:
                 userID = 0;

@@ -1,6 +1,7 @@
 #include "tetris/tetris_c_api.h"
 #include "tetris/multiplayer_tetris_game.hpp"
 #include "tetris/singleplayer_tetris_game.hpp"
+#include <winsock2.h>
 
 #ifdef __cplusplus
 extern "C" {

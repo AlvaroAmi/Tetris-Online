@@ -116,6 +116,9 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
     char* param1 = strtok(NULL, "|");
     char* param2 = strtok(NULL, "|");
     char* param3 = strtok(NULL, "|");
+    char* param4 = strtok(NULL, "|");
+    char* param5 = strtok(NULL, "|");
+    char* param6 = strtok(NULL, "|");
 
     if (command == nullptr) {
         const char* response = "Invalid request format";
@@ -180,7 +183,27 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
                 send(clients[enemy_id], message, strlen(message), 0);
             }
         }
-    } else if (strcmp(command, "GAME_UPDATE") == 0) {
+    } else if (strcmp(command, "SINGLEGAMEFINISH") == 0) {
+        if (param1 == nullptr || param2 == nullptr || param3 == nullptr || param4 == nullptr || param5 == nullptr || param6 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        char* start_datetime = param1;
+        char* end_datetime = param2;
+        int score = stoi(param3);
+        int lines_cleared = stoi(param4);
+        int level = stoi(param5);
+        int user_id = stoi(param6);
+        if (insert_singleplayer_game(db, start_datetime, end_datetime, score, lines_cleared, level, user_id) == 1) {
+            const char* response = "1";
+            send(communication_socket, response, strlen(response), 0);
+        } else {
+            const char* response = "0";
+            send(communication_socket, response, strlen(response), 0);
+        }
+    }else if (strcmp(command, "GAME_UPDATE") == 0) {
         if (param1 == nullptr) {
             const char* response = "Invalid request format";
             send(communication_socket, response, strlen(response), 0);

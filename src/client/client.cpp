@@ -186,6 +186,15 @@ void send_game_finish(SOCKET sock) {
     }
 }
 
+void send_singleplayer_game_finish(SOCKET sock, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level) {
+    char message[256];
+    sprintf(message, "SINGLEGAMEFINISH|%s|%s|%d|%d|%d|1", start_datetime, finish_datetime, score, linesCleared, level);
+    if (send(sock, message, strlen(message), 0) < 0) {
+        std::cerr << "Send SINGLEGAMEFINISH failed: " << WSAGetLastError() << std::endl;
+        log("Send SINGLEGAMEFINISH failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
 void start_listener_thread(SOCKET sock) {
     keep_running = true;
     listener_thread = thread(listen_for_updates, sock);
