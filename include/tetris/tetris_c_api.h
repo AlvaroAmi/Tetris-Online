@@ -11,10 +11,11 @@ typedef void *singleplayer_tetris_game;
 typedef void *multiplayer_tetris_game;
 
 EXTERNC singleplayer_tetris_game create_singleplayer_tetris_game();
-/* EXTERNC void destroy_singleplayer_game(SingleplayerTetrisGame game);
 
-EXTERNC MultiplayerTetrisGame create_multiplayer_game();
-EXTERNC void destroy_multiplayer_game(MultiplayerTetrisGame game); */
+EXTERNC multiplayer_tetris_game create_multiplayer_tetris_game(SOCKET sock);
+EXTERNC void destroy_multiplayer_game(multiplayer_tetris_game game);
+EXTERNC void update_enemy_playfield(singleplayer_tetris_game game, char *matrix_c_string);
+EXTERNC void enqueue_garbage(multiplayer_tetris_game game, int lines);
 
 #undef EXTERNC
 

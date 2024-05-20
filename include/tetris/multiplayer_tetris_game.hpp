@@ -25,14 +25,15 @@ class MultiplayerTetrisGame : TetrisGame {
 
 public:
     MultiplayerTetrisGame(SOCKET sock);
+
     void enqueueGarbage(int lines);
+
+    void updateEnemyPlayfield(std::string &matrixString);
 
 private:
     virtual void lockTetromino() override;
 
     void sendPlayfield();
-
-    void updateEnemyPlayfield(std::string &matrixString);
 
     void addGarbage();
 
