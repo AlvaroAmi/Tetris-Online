@@ -1,7 +1,7 @@
 #include "client.hpp"
 #include "config_file_parser.h"
 #include "menus.h"
-#include "tetris/tetris_c_api.h"
+#include "tetris/multiplayer_tetris_game.hpp"
 #include <atomic>
 #include <ctime>
 #include <fstream>
@@ -17,7 +17,7 @@ extern "C" void menus_create_multiplayer_game(SOCKET sock);
 int user_id = 0;
 int block_menu_loop = 0;
 
-multiplayer_tetris_game game;
+MultiplayerTetrisGame *game;
 
 ofstream logFile("client_log.log", ios::app);
 atomic<bool> keep_running(false);
@@ -174,7 +174,8 @@ void listen_for_updates(SOCKET sock) {
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");
-                menus_create_multiplayer_game(sock);
+                game = new MultiplayerTetrisGame(sock);
+                block_menu_loop = 0;
             } else {
                 cout << "Unknown message from server: " << received_message << endl;
                 log("Unknown message from server: " + received_message, "INFO");

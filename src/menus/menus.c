@@ -139,11 +139,6 @@ void start_game(SOCKET sock) {
     block_menu_loop = 1;
 }
 
-void menus_create_multiplayer_game(SOCKET sock) {
-    game = create_multiplayer_tetris_game(sock);
-    block_menu_loop = 0;
-}
-
 void finish_game(SOCKET sock) {
     send_game_finish(sock);
     // Add game finish logic here
