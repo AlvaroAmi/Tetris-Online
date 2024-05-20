@@ -17,6 +17,7 @@ void send_game_finish(SOCKET sock);
 #ifdef __cplusplus
 }
 void send_game_update(SOCKET sock, const string &matrix);
+void send_garbage(SOCKET sock, int lines);
 void send_singleplayer_game_finish(SOCKET sock, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level);
 void start_client();
 #endif

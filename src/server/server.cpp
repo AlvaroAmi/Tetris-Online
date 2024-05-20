@@ -213,7 +213,18 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
         char* matrix = param1;
         string message = "UPDATE|" + to_string(client_id) + "|" + string(matrix);
         forward_to_enemy(client_id, message);
-    } else {
+    }else if (strcmp(command, "GARBAGE") == 0) {
+        if (param1 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        int lines = stoi(param1);
+        string message = "GARBAGE|" + to_string(lines);
+        forward_to_enemy(client_id, message);
+    }
+     else {
         const char* response = "Unknown command";
         send(communication_socket, response, strlen(response), 0);
         log("Received unknown command.", "ERROR");
