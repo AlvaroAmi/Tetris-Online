@@ -125,7 +125,7 @@ void listen_for_updates(SOCKET sock) {
     fd_set readfds;
     struct timeval tv;
 
-    u_long mode = 1; // Not block mode
+    u_long mode = 1; // Non blocking mode
     ioctlsocket(sock, FIONBIO, &mode);
 
     while (keep_running) {
@@ -153,17 +153,37 @@ void listen_for_updates(SOCKET sock) {
             }
 
             receive_buffer[bytes_received] = '\0';
-            cout << "Update from server: " << receive_buffer << endl;
-            log("Update from server: " + string(receive_buffer), "INFO");
+            string received_message(receive_buffer);
+
+            if (received_message.rfind("UPDATE|", 0) == 0) {
+                string matrix = received_message.substr(7);
+                log("Update from server (matrix): " + matrix, "INFO");
+                //Añadir función para actualizar la pantalla
+            } else if (received_message.rfind("GARBAGE|", 0) == 0) {
+                int lines = stoi(received_message.substr(8));
+                log("Garbage lines received from server: " + to_string(lines), "INFO");
+                //Añadir función para añadir basura
+            } else {
+                cout << "Unknown message from server: " << received_message << endl;
+                log("Unknown message from server: " + received_message, "INFO");
+            }
         }
     }
 
-    mode = 0; // Block mode
+    mode = 0; // Blocking mode
     ioctlsocket(sock, FIONBIO, &mode);
 }
 
 void send_game_update(SOCKET sock, const string &matrix) {
     string message = "GAME_UPDATE|" + matrix;
+    if (send(sock, message.c_str(), message.length(), 0) < 0) {
+        std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
+        log("Send failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
+void send_garbage(SOCKET sock, int lines) {
+    string message = "GARBAGE|" + lines;
     if (send(sock, message.c_str(), message.length(), 0) < 0) {
         std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
         log("Send failed: " + to_string(WSAGetLastError()), "ERROR");
