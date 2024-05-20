@@ -141,10 +141,8 @@ void TetrisGameRenderer::displayNextTetromino(WINDOW *win, TetrominoType tetromi
             mvwaddstr(win, y_coordinate, x_coordinate, "    ");
             mvwaddstr(win, y_coordinate + 1, x_coordinate, "    ");
             wattroff(win, COLOR_PAIR(value));
-
-            wrefresh(win);
         }
     }
     box(win, 0, 0);
-    wrefresh(win);
+    wnoutrefresh(win);
 }

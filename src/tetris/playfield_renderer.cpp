@@ -56,7 +56,7 @@ void PlayfieldRenderer::renderPlayfield(std::optional<Tetromino> currentTetromin
             wattroff(window, COLOR_PAIR(color));
         }
     }
-    wrefresh(window);
+    wnoutrefresh(window);
 }
 
 void PlayfieldRenderer::printPlayfield(const Playfield &playfield, const Tetromino &currentTetromino) {
