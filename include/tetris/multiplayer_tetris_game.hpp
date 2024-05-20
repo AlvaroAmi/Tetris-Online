@@ -7,6 +7,8 @@
 #include "tetris/srs_manager.hpp"
 #include "tetris/tetris_game.hpp"
 #include "tetris/tetromino.hpp"
+#include <iostream>
+#include <random>
 #include <winsock2.h>
 
 class MultiplayerTetrisGameRenderer;
@@ -22,6 +24,9 @@ class MultiplayerTetrisGame : TetrisGame {
     int garbageLinesReceived = 0;
 
     Playfield enemyPlayfield;
+
+    std::mt19937 gen;
+    std::uniform_int_distribution<> distribution;
 
 public:
     MultiplayerTetrisGame(SOCKET sock);

@@ -2,11 +2,13 @@
 #include "client.hpp"
 #include "tetris/multiplayer_tetris_game_renderer.hpp"
 #include <chrono>
+#include <random>
 #include <thread>
 
 #define GRAVITY 33
 
-MultiplayerTetrisGame::MultiplayerTetrisGame(SOCKET sock) : sock(sock), renderer(*this) {
+MultiplayerTetrisGame::MultiplayerTetrisGame(SOCKET sock)
+    : sock(sock), renderer(*this), gen(std::random_device()()), distribution(0, PLAYFIELD_WIDTH - 1) {
     nextTetrominoType = bagRandomGenerator.getNextTetrominoType();
     spawnTetromino();
     resetTicksTillGravity();
@@ -28,7 +30,7 @@ MultiplayerTetrisGame::MultiplayerTetrisGame(SOCKET sock) : sock(sock), renderer
 
 void MultiplayerTetrisGame::lockTetromino() {
     TetrisGame::lockTetromino();
-    addGarbage();
+    addGarbage(); // Add garbage after the tetromino is locked
     spawnTetromino();
 }
 
@@ -60,14 +62,20 @@ void MultiplayerTetrisGame::enqueueGarbage(int lines) {
 
 void MultiplayerTetrisGame::addGarbage() {
     garbageLinesReceived += pendingGarbageLines;
-    for (int i = 0; i < pendingGarbageLines; i++) {
-        for (int y = 0; y < VISIBLE_PLAYFIELD_HEIGHT - 1; y++) {
-            for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
-                enemyPlayfield.setTile(x, y, enemyPlayfield.getTile(x, y + 1));
-            }
-        }
+    int garbageHoleIndex = distribution(gen);
+
+    // Shift the playfield up
+    for (int y = PLAYFIELD_HEIGHT - pendingGarbageLines; y >= 0; y--) {
         for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
-            enemyPlayfield.setTile(x, VISIBLE_PLAYFIELD_HEIGHT - 1, Color::GRAY);
+            playfield.setTile(x, y + pendingGarbageLines, enemyPlayfield.getTile(x, y));
+        }
+    }
+
+    // Add the garbage
+    for (int i = 0; i < pendingGarbageLines; i++) {
+        for (int x = 0; x < PLAYFIELD_WIDTH; x++) {
+            if (x == garbageHoleIndex) continue;
+            playfield.setTile(x, i, Color::GRAY);
         }
     }
 
