@@ -131,6 +131,7 @@ int receive_response(SOCKET sock) {
 void handle_match_found(SOCKET sock) {
     log("Match found, initializing game", "INFO");
         game = new MultiplayerTetrisGame(sock);
+    game->startGame();
         block_menu_loop = 0;
 }
 
@@ -173,8 +174,7 @@ void listen_for_updates(SOCKET sock) {
             if (received_message.rfind("UPDATE|", 0) == 0) {
                 string matrix = received_message.substr(7);
                 log("Update from server (matrix): " + matrix, "INFO");
-                std::string matrixString = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005500000";
-                if (game != nullptr) game->updateEnemyPlayfield(matrixString);
+                if (game != nullptr) game->updateEnemyPlayfield(matrix);
             } else if (received_message.rfind("GARBAGE|", 0) == 0) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
@@ -182,8 +182,8 @@ void listen_for_updates(SOCKET sock) {
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");
-                thread match_thread(handle_match_found, sock);
-                match_thread.detach();
+                std::thread game_thread(handle_match_found, sock);
+                game_thread.detach();
             } else {
                 cout << "Unknown message from server: " << received_message << endl;
                 log("Unknown message from server: " + received_message, "INFO");

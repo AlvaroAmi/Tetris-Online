@@ -28,6 +28,8 @@ class MultiplayerTetrisGame : TetrisGame {
 public:
     MultiplayerTetrisGame(SOCKET sock);
 
+    void startGame();
+
     void enqueueGarbage(int lines);
 
     void updateEnemyPlayfield(std::string &matrixString);
