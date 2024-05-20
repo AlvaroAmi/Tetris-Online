@@ -72,8 +72,9 @@ void SingleplayerTetrisGameRenderer::render() const {
 
     displayNextTetromino(nextDisplayWin, game.nextTetrominoType);
 
-    wrefresh(scoreWin);
-    wrefresh(levelWin);
-    wrefresh(linesWin);
-    wrefresh(nextDisplayWin);
+    wnoutrefresh(scoreWin);
+    wnoutrefresh(levelWin);
+    wnoutrefresh(linesWin);
+    wnoutrefresh(nextDisplayWin);
+    doupdate();
 }

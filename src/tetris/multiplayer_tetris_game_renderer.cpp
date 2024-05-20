@@ -96,6 +96,7 @@ void MultiplayerTetrisGameRenderer::render() const {
 
     displayNextTetromino(player1_next_display_win, game.nextTetrominoType);
 
-    wrefresh(player1_garbage_win);
-    wrefresh(player1_next_display_win);
+    wnoutrefresh(player1_garbage_win);
+    wnoutrefresh(player1_next_display_win);
+    doupdate();
 }
