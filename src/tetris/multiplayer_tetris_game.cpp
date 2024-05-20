@@ -22,7 +22,7 @@ MultiplayerTetrisGame::MultiplayerTetrisGame(SOCKET sock)
         sendPlayfield();
         renderer.render();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     endwin();

@@ -86,7 +86,6 @@ void remove_from_matchmaking_queue(int user_id) {
 void forward_to_enemy(int user_id, const string& message) {
     lock_guard<mutex> guard(clients_mutex);
 
-    //Search enemy ID
     auto it = find_if(pairs.begin(), pairs.end(), [user_id](const pair<int, int>& p) {
         return p.first == user_id || p.second == user_id;
     });
@@ -94,12 +93,21 @@ void forward_to_enemy(int user_id, const string& message) {
     if (it != pairs.end()) {
         int enemy_id = (it->first == user_id) ? it->second : it->first;
 
-        if (clients.find(enemy_id) != clients.end()) {
+        if (user_to_socket.find(enemy_id) != user_to_socket.end()) {
             SOCKET enemy_socket = user_to_socket[enemy_id];
-            send(enemy_socket, message.c_str(), message.length(), 0);
+            if (send(enemy_socket, message.c_str(), message.length(), 0) < 0) {
+                log("Send to enemy failed: " + to_string(WSAGetLastError()), "ERROR");
+            } else {
+                log("Message sent to enemy (user_id: " + to_string(enemy_id) + ", socket: " + to_string(enemy_socket) + "): " + message, "INFO");
+            }
+        } else {
+            log("Enemy socket not found for user_id: " + to_string(enemy_id), "ERROR");
         }
+    } else {
+        log("Enemy not found for user_id: " + to_string(user_id), "ERROR");
     }
 }
+
 
 void update_user_socket_mapping(int client_id, int user_id) {
     lock_guard<mutex> guard(clients_mutex);
@@ -207,7 +215,7 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
             const char* response = "0";
             send(communication_socket, response, strlen(response), 0);
         }
-    }else if (strcmp(command, "GAME_UPDATE") == 0) {
+    } else if (strcmp(command, "GAME_UPDATE") == 0) {
         if (param1 == nullptr) {
             const char* response = "Invalid request format";
             send(communication_socket, response, strlen(response), 0);
@@ -215,9 +223,10 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
             return;
         }
         char* matrix = param1;
-        string message = "UPDATE|" + to_string(client_id) + "|" + string(matrix);
-        forward_to_enemy(client_id, message);
-    }else if (strcmp(command, "GARBAGE") == 0) {
+        string message = "UPDATE|" + string(matrix);
+        log("Received game update from user_id: " + to_string(socket_to_user[client_id]) + ", message: " + message, "INFO");
+        forward_to_enemy(socket_to_user[client_id], message);
+    } else if (strcmp(command, "GARBAGE") == 0) {
         if (param1 == nullptr) {
             const char* response = "Invalid request format";
             send(communication_socket, response, strlen(response), 0);
@@ -226,19 +235,22 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
         }
         int lines = stoi(param1);
         string message = "GARBAGE|" + to_string(lines);
-        forward_to_enemy(client_id, message);
-    }
-     else {
+        forward_to_enemy(socket_to_user[client_id], message);
+    } else {
         const char* response = "Unknown command";
         send(communication_socket, response, strlen(response), 0);
+        cout << command << endl;
         log("Received unknown command.", "ERROR");
     }
 }
+
 
 void client_handler(SOCKET communication_socket, int client_id) {
     char receive_buffer[512] = {0};
 
     while (true) {
+        memset(receive_buffer, 0, sizeof(receive_buffer));
+        
         int bytes_received = recv(communication_socket, receive_buffer, sizeof(receive_buffer) - 1, 0);
         if (bytes_received == SOCKET_ERROR) {
             log("Receive failed: " + to_string(WSAGetLastError()), "ERROR");
@@ -276,6 +288,7 @@ void client_handler(SOCKET communication_socket, int client_id) {
 
     closesocket(communication_socket);
 }
+
 
 int main() {
     WSADATA wsa_data;

@@ -128,6 +128,12 @@ int receive_response(SOCKET sock) {
     }
 }
 
+void handle_match_found(SOCKET sock) {
+    log("Match found, initializing game", "INFO");
+        game = new MultiplayerTetrisGame(sock);
+        block_menu_loop = 0;
+}
+
 void listen_for_updates(SOCKET sock) {
     char receive_buffer[512];
     fd_set readfds;
@@ -137,11 +143,12 @@ void listen_for_updates(SOCKET sock) {
     ioctlsocket(sock, FIONBIO, &mode);
 
     while (keep_running) {
+
         FD_ZERO(&readfds);
         FD_SET(sock, &readfds);
 
-        tv.tv_sec = 1;
-        tv.tv_usec = 0;
+        tv.tv_sec = 0;
+        tv.tv_usec = 10;
 
         int activity = select(0, &readfds, NULL, NULL, &tv);
 
@@ -166,7 +173,8 @@ void listen_for_updates(SOCKET sock) {
             if (received_message.rfind("UPDATE|", 0) == 0) {
                 string matrix = received_message.substr(7);
                 log("Update from server (matrix): " + matrix, "INFO");
-                if (game != nullptr) game->updateEnemyPlayfield(matrix);
+                std::string matrixString = "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005500000";
+                if (game != nullptr) game->updateEnemyPlayfield(matrixString);
             } else if (received_message.rfind("GARBAGE|", 0) == 0) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
@@ -174,8 +182,8 @@ void listen_for_updates(SOCKET sock) {
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");
-                game = new MultiplayerTetrisGame(sock);
-                block_menu_loop = 0;
+                thread match_thread(handle_match_found, sock);
+                match_thread.detach();
             } else {
                 cout << "Unknown message from server: " << received_message << endl;
                 log("Unknown message from server: " + received_message, "INFO");
@@ -196,7 +204,7 @@ void send_game_update(SOCKET sock, const string &matrix) {
 }
 
 void send_garbage(SOCKET sock, int lines) {
-    string message = "GARBAGE|" + lines;
+    string message = "GARBAGE|" + to_string(lines);
     if (send(sock, message.c_str(), message.length(), 0) < 0) {
         std::cerr << "Send failed: " << WSAGetLastError() << std::endl;
         log("Send failed: " + to_string(WSAGetLastError()), "ERROR");
