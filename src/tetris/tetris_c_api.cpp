@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 
-void *create_singleplayer_tetris_game() {
-    return new SingleplayerTetrisGame();
+void *create_singleplayer_tetris_game(SOCKET sock) {
+    return new SingleplayerTetrisGame(sock);
 }
 
 void *create_multiplayer_tetris_game(SOCKET sock) {

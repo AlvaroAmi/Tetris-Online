@@ -10,7 +10,7 @@
 typedef void *singleplayer_tetris_game;
 typedef void *multiplayer_tetris_game;
 
-EXTERNC singleplayer_tetris_game create_singleplayer_tetris_game();
+EXTERNC singleplayer_tetris_game create_singleplayer_tetris_game(SOCKET sock);
 
 EXTERNC multiplayer_tetris_game create_multiplayer_tetris_game(SOCKET sock);
 EXTERNC void destroy_multiplayer_game(multiplayer_tetris_game game);
