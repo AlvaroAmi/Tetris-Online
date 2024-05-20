@@ -236,6 +236,15 @@ void send_singleplayer_game_finish(SOCKET sock, const char *start_datetime, cons
     }
 }
 
+void send_multiplayer_game_finish(SOCKET sock, int id_user1, int id_user2, bool first_win, const char *start_datetime, const char *finish_datetime) {
+    char message[256];
+    sprintf(message, "MULTIPLAYERGAMEFINISH|%d|%d|%d|%s|%s", id_user1, id_user2, first_win, start_datetime, finish_datetime);
+    if (send(sock, message, strlen(message), 0) < 0) {
+        std::cerr << "Send MULTIPLAYERGAMEFINISH failed: " << WSAGetLastError() << std::endl;
+        log("Send MULTIPLAYERGAMEFINISH failed: " + to_string(WSAGetLastError()), "ERROR");
+    }
+}
+
 void start_listener_thread(SOCKET sock) {
     keep_running = true;
     listener_thread = thread(listen_for_updates, sock);

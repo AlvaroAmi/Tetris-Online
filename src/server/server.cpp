@@ -215,6 +215,26 @@ void process_request(char* request, SOCKET communication_socket, int client_id) 
             const char* response = "0";
             send(communication_socket, response, strlen(response), 0);
         }
+    } else if (strcmp(command, "MULTIPLAYERGAMEFINISH") == 0) {
+        if (param1 == nullptr || param2 == nullptr || param3 == nullptr || param4 == nullptr || param5 == nullptr) {
+            const char* response = "Invalid request format";
+            send(communication_socket, response, strlen(response), 0);
+            log("Received invalid request.", "ERROR");
+            return;
+        }
+        int id_user1 = stoi(param1);
+        int id_user2 = stoi(param2);
+        bool first_win = stoi(param3);
+        char* start_datetime = param4;
+        char* end_datetime = param5;
+        
+        if (insert_multiplayer_game(db, id_user1, id_user2, first_win, start_datetime, end_datetime) == 1) {
+            const char* response = "1";
+            send(communication_socket, response, strlen(response), 0);
+        } else {
+            const char* response = "0";
+            send(communication_socket, response, strlen(response), 0);
+        }
     } else if (strcmp(command, "GAME_UPDATE") == 0) {
         if (param1 == nullptr) {
             const char* response = "Invalid request format";
