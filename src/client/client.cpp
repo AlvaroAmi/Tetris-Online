@@ -12,6 +12,8 @@ using namespace std;
 #define DEFAULT_SERVER_IP "127.0.0.1" // Default values if config file fails
 #define DEFAULT_SERVER_PORT 6000
 
+int user_id = 0;
+
 ofstream logFile("client_log.log", ios::app);
 atomic<bool> keep_running(false);
 thread listener_thread;
@@ -108,6 +110,7 @@ int receive_response(SOCKET sock) {
             std::cout << "Operacion fallida, intentalo de nuevo." << std::endl;
         } else if (result > 0) {
             std::cout << "Operacion exitosa" << std::endl;
+            user_id = result;
         }
 
         return result;
@@ -208,7 +211,7 @@ void send_game_finish(SOCKET sock) {
 
 void send_singleplayer_game_finish(SOCKET sock, const char *start_datetime, const char *finish_datetime, int score, int linesCleared, int level) {
     char message[256];
-    sprintf(message, "SINGLEGAMEFINISH|%s|%s|%d|%d|%d|1", start_datetime, finish_datetime, score, linesCleared, level);
+    sprintf(message, "SINGLEGAMEFINISH|%s|%s|%d|%d|%d|%d", start_datetime, finish_datetime, score, linesCleared, level, user_id);
     if (send(sock, message, strlen(message), 0) < 0) {
         std::cerr << "Send SINGLEGAMEFINISH failed: " << WSAGetLastError() << std::endl;
         log("Send SINGLEGAMEFINISH failed: " + to_string(WSAGetLastError()), "ERROR");
