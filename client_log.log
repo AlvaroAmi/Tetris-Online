@@ -1,0 +1,10 @@
+[2024-05-20 11:29:04] [INFO] Client application started
+[2024-05-20 11:29:04] [INFO] Initializing Winsock
+[2024-05-20 11:29:04] [INFO] Connecting to server 127.0.0.1:6000
+[2024-05-20 11:29:04] [INFO] Connected to server
+[2024-05-20 11:29:13] [INFO] Receiving response from server
+[2024-05-20 11:29:13] [INFO] Server reply: 4
+[2024-05-20 11:29:18] [INFO] Update from server: 1
+[2024-05-20 11:29:21] [INFO] Socket closed
+[2024-05-20 11:29:21] [INFO] Winsock cleanup complete
+[2024-05-20 11:29:21] [INFO] Client application ended

@@ -11,17 +11,17 @@ gcc -o ./bin/main $(find ./src -type f -name "*.c" ! -name "create_database.c") 
 #### On Windows:
 ```
 
-gcc -o bin/create_database src/database/create_database.c lib/sqlite-amalgamation-3080704/sqlite3.c -Ilib/sqlite-amalgamation-3080704 -Ilib  -lpthread
+gcc -o bin/create_database src/database/create_database.c src/database/database.c lib/sqlite-amalgamation-3080704/sqlite3.c  -Iinclude -Ilib/sqlite-amalgamation-3080704 -Ilib -lpthread
 
-gcc -o bin/query_database tests/query_database.c lib/sqlite-amalgamation-3080704/sqlite3.c -Ilib/sqlite-amalgamation-3080704 -Ilib  -lpthread
+gcc -o bin/query_database tests/query_database.c src/database/database.c lib/sqlite-amalgamation-3080704/sqlite3.c -Iinclude -Ilib/sqlite-amalgamation-3080704 -Ilib -lpthread
 
 
-gcc -c src/files/*.c src/menus/*.c src/main.c lib/sqlite-amalgamation-3080704/sqlite3.c -Iinclude -Ilib/sqlite-amalgamation-3080704
+gcc -c src/database/database.c src/files/*.c src/menus/*.c lib/sqlite-amalgamation-3080704/sqlite3.c -Iinclude -Ilib/sqlite-amalgamation-3080704
 g++ -c src/database/database.c -Iinclude -o database.o
 
 Cliente:
-g++ -c src/client/*.cpp -Iinclude
-g++ database.o menus.o config_file_parser.o sqlite3.o client.o client_main.o -o bin/client.exe -lws2_32
+g++ -c src/client/*.cpp src/tetris/*.cpp -Iinclude
+g++ *.o -o bin/client.exe -lws2_32 -lncurses  
 
 Servidor:
 g++ -c src/server/server.cpp -Iinclude

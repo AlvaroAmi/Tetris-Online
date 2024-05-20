@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "sqlite3.h"
+#include "database.h"
 
+// Declaración de funciones
 void create_table(int rc, sqlite3 *db, char *query, char *table_name, char *err_msg);
 void insert_data(int rc, sqlite3 *db, char *query, char *table_name, char *err_msg);
+char* calculate_game_duration(sqlite3 *db, int id, int is_multiplayer);  
 
 int main() {
     sqlite3 *db;
@@ -18,14 +22,16 @@ int main() {
         fprintf(stdout, "Base de datos abierta exitosamente\n");
     }
 
-    // Creation of tables (User, Multiplayer_Game, Singleplayer_Game)
+    // Creation of tables (User, Multiplayer_Game, Singleplayer_Game, Game_Sessions)
     char *create_user = "CREATE TABLE User (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, email TEXT, password TEXT, highestScore INT DEFAULT 0);";
     char *create_multiplayer_game = "CREATE TABLE Multiplayer_Game (id INTEGER PRIMARY KEY AUTOINCREMENT, idUser1 INTEGER, idUser2 INTEGER, firstWins BOOLEAN, start DATETIME, end DATETIME, FOREIGN KEY (idUser1) REFERENCES User(id), FOREIGN KEY (idUser2) REFERENCES User(id));";
     char *create_singleplayer_game = "CREATE TABLE Singleplayer_Game (id INTEGER PRIMARY KEY AUTOINCREMENT, start_datetime DATETIME, finish_datetime DATETIME, score INTEGER, linesCleared INTEGER, level INTEGER, player_id INTEGER, FOREIGN KEY (player_id) REFERENCES User(id));";
+    char *create_game_sessions = "CREATE TABLE Game_Sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, idUser INTEGER, game_id INTEGER, game_duration TEXT, FOREIGN KEY (idUser) REFERENCES User(id));";
 
     create_table(rc, db, create_user, "User", err_msg);
     create_table(rc, db, create_multiplayer_game, "Multiplayer_Game", err_msg);
     create_table(rc, db, create_singleplayer_game, "Singleplayer_Game", err_msg);
+    create_table(rc, db, create_game_sessions, "Game_Sessions", err_msg);
 
     // User addition for test
     char *create_user1 = "INSERT INTO User (username, email, password) values ('@alvaro', 'alvaro@gmail.com', '12345');";
@@ -59,6 +65,29 @@ int main() {
     
     insert_data(rc, db, insert_singleplayer_game1, "Singleplayer_Game", err_msg);
     insert_data(rc, db, insert_singleplayer_game2, "Singleplayer_Game", err_msg);
+
+    // Calculate and insert game duration into Game_Sessions
+    int game_id = 1;  
+    for (int i = 1; i <= 2; i++) {
+        char *duration = calculate_game_duration(db, game_id, 1);  
+        if (duration != NULL) {
+            char query[256];
+            snprintf(query, sizeof(query), "INSERT INTO Game_Sessions (idUser, game_id, game_duration) VALUES (%d, %d, '%s');", i, game_id, duration);
+            insert_data(rc, db, query, "Game_Sessions", err_msg);
+            free(duration);
+        }
+        game_id++;
+    }
+    for (int i = 1; i <= 2; i++) {
+        char *duration = calculate_game_duration(db, game_id, 0);  
+        if (duration != NULL) {
+            char query[256];
+            snprintf(query, sizeof(query), "INSERT INTO Game_Sessions (idUser, game_id, game_duration) VALUES (%d, %d, '%s');", i, game_id, duration);
+            insert_data(rc, db, query, "Game_Sessions", err_msg);
+            free(duration);
+        }
+        game_id++;
+    }
 
     // Cerrar la base de datos
     sqlite3_close(db);
