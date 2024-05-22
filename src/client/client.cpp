@@ -130,9 +130,8 @@ int receive_response(SOCKET sock) {
 
 void handle_match_found(SOCKET sock) {
     log("Match found, initializing game", "INFO");
-        game = new MultiplayerTetrisGame(sock);
-    game->startGame();
-        block_menu_loop = 0;
+    game = new MultiplayerTetrisGame(sock);
+    block_menu_loop = 0;
 }
 
 void listen_for_updates(SOCKET sock) {
@@ -174,11 +173,11 @@ void listen_for_updates(SOCKET sock) {
             if (received_message.rfind("UPDATE|", 0) == 0) {
                 string matrix = received_message.substr(7);
                 log("Update from server (matrix): " + matrix, "INFO");
-                if (game != nullptr) game->updateEnemyPlayfield(matrix);
+                // if (game != nullptr) game->updateEnemyPlayfield(matrix);
             } else if (received_message.rfind("GARBAGE|", 0) == 0) {
                 int lines = stoi(received_message.substr(8));
                 log("Garbage lines received from server: " + to_string(lines), "INFO");
-                if (game != nullptr) game->enqueueGarbage(lines);
+                // if (game != nullptr) game->enqueueGarbage(lines);
             } else if (received_message.rfind("MATCHED|", 0) == 0) {
                 cout << "Partida encontrada" << endl;
                 log("Match found from server", "INFO");

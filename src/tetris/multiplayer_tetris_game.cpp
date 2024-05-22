@@ -12,9 +12,7 @@ MultiplayerTetrisGame::MultiplayerTetrisGame(SOCKET sock)
     nextTetrominoType = bagRandomGenerator.getNextTetrominoType();
     spawnTetromino();
     resetTicksTillGravity();
-}
 
-void MultiplayerTetrisGame::startGame() {
     while (!gameIsOver) {
         updateGame();
 

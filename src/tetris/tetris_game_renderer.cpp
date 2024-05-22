@@ -10,6 +10,7 @@
 
 TetrisGameRenderer::TetrisGameRenderer(int width, int height) {
     initscr();
+    clear();
     if (LINES < height || COLS < width) {
         endwin();
         std::cout << "Terminal window too small!" << std::endl;
